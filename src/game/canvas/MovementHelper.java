@@ -15,6 +15,14 @@ public class MovementHelper {
         this.y = y;
     }
 
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
     public int[] calculateNthPosition(Tile startTile, int n, int max) {
         int[] xy = new int[2];
         xy[0] = (startTile.getBoardX() * Tile.TILE_SIZE) + (n * ((Tile.TILE_SIZE / n) * this.x));
