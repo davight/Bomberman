@@ -1,6 +1,7 @@
 package game.utils;
 
 import game.canvas.Block;
+import game.canvas.EntityType;
 import game.canvas.GameCanvas;
 
 public class Main {
@@ -25,6 +26,7 @@ public class Main {
         System.out.println(gameCanvas.getTileAtBoard(0, 0));
         System.out.println(gameCanvas.getTileAtBoard(2, 0));
         gameCanvas.spawnPlayer(gameCanvas.getTileAtBoard(1, 1));
+        gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(9, 9));
         //gameCanvas.spawnPlayerAt(gameCanvas.getTileAt(2, 2));
         //gameCanvas.spawnEntityAt(gameCanvas.getTileAt(5, 2));
         //MANAZER.spravujObjekt(player);
