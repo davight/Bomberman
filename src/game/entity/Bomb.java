@@ -9,7 +9,6 @@ import game.canvas.Tile;
 
 import java.util.ArrayList;
 
-
 public class Bomb {
 
     private static final Manager BOMB_MANAGER = new Manager();
