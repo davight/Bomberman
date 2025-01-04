@@ -3,7 +3,7 @@ package game.entity;
 import fri.shapesge.Image;
 import fri.shapesge.ImageData;
 import fri.shapesge.Manager;
-import game.canvas.Block;
+import game.canvas.BlockType;
 import game.canvas.GameCanvas;
 import game.canvas.Tile;
 
@@ -61,9 +61,12 @@ public class Bomb {
     }
 
     private void explodeTiles() {
+        if (!this.tile.getGameCanvas().isPlaying()) {
+            return;
+        }
         this.image.makeInvisible();
         for (Tile tempTile : this.mappedExplosion.keySet()) {
-            if (tempTile.getBlock() == Block.BRICKS || tempTile.getBlock() == Block.GRASS) {
+            if (tempTile.getBlock() == BlockType.BRICKS || tempTile.getBlock() == BlockType.GRASS) {
                 this.mappedExplosion.get(tempTile).makeVisible();
                 tempTile.kill();
             }
@@ -73,8 +76,8 @@ public class Bomb {
     private void unexplodeTiles() {
         for (Tile tempTile : this.mappedExplosion.keySet()) {
             this.mappedExplosion.get(tempTile).makeInvisible();
-            if (tempTile.getBlock() == Block.BRICKS) {
-                tempTile.setBlock(Block.GRASS);
+            if (tempTile.getBlock() == BlockType.BRICKS) {
+                tempTile.setBlock(BlockType.GRASS);
             }
         }
         BOMB_MANAGER.stopManagingObject(this);
