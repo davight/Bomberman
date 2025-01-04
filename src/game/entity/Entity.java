@@ -21,6 +21,7 @@ public class Entity {
 
     private long lastMillis;
     private Tile tile;
+    private boolean isAlive = true;
 
     public Entity(EntityType type, Tile tile) {
         ENTITY_MANAGER.manageObject(this);
@@ -43,7 +44,7 @@ public class Entity {
     }
 
     public void tick() {
-        if (this.lastMillis + this.type.getRandomMovement() > System.currentTimeMillis() || this.movement.isActive()) {
+        if (this.lastMillis + this.type.getRandomMovement() > System.currentTimeMillis() || this.movement.isActive() || !this.isAlive) {
             return;
         }
         if (this.generateMovement()) {
@@ -65,11 +66,15 @@ public class Entity {
     }
 
     public void die() {
+        if (!this.isAlive) {
+            return;
+        }
+        this.isAlive = false;
         this.image.makeInvisible();
-        ENTITY_MANAGER.stopManagingObject(this);
         if (this.type == EntityType.EXPLOSIVE) {
             this.gameCanvas.spawnBomb(this.tile);
         }
+        ENTITY_MANAGER.stopManagingObject(this);
     }
 
     private static Movement.Direction[] shuffleArray(Movement.Direction[] arr) {
