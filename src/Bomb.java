@@ -1,20 +1,16 @@
-package game.entity;
-
 import fri.shapesge.Image;
 import fri.shapesge.ImageData;
-import fri.shapesge.Manager;
-import game.canvas.BlockType;
-import game.canvas.GameCanvas;
-import game.canvas.Tile;
 
 import java.util.HashMap;
 
+/**
+ * Trieda bomb, predstavuje bombu, ktorá po pár sekundách po položení vybuchne a premení/zničí okolité blocky.
+ */
 public class Bomb {
 
-    private static final Manager BOMB_MANAGER = new Manager();
-    private static final int TIME_TO_EXPLODE = 2;
-    private static final ImageData BOMB_IMAGE = new ImageData("game/canvas/grass_bomb.png");
-    private static final ImageData EXPLOSION_IMAGE = new ImageData("game/canvas/explosion.png");
+    private static final int TIME_TO_EXPLODE = 2000;
+    private static final ImageData BOMB_IMAGE = new ImageData("images/misc/bomb.png");
+    private static final ImageData EXPLOSION_IMAGE = new ImageData("images/misc/explosion.png");
 
     private final HashMap<Tile, Image> mappedExplosion = new HashMap<>(9);
     private final Image image = new Image(BOMB_IMAGE);
@@ -23,8 +19,11 @@ public class Bomb {
     private long start;
     private boolean exploded = false;
 
+    /**
+     * Inicializuje novú bombu na danom tile a spustí časovač.
+     * @param tile tile, na ktorom sa bomba zobrazí
+     */
     public Bomb(Tile tile) {
-        BOMB_MANAGER.manageObject(this);
         this.tile = tile;
         this.start = System.currentTimeMillis();
         this.image.changePosition(tile.getBoardX() * Tile.TILE_SIZE, tile.getBoardY() * Tile.TILE_SIZE);
@@ -43,12 +42,18 @@ public class Bomb {
         }
     }
 
+    /**
+     * Vráti tile, na ktorom sa bomba nachádza.
+     */
     public Tile getTile() {
         return this.tile;
     }
 
+    /**
+     * ShapesGE listener ticku. Odpočítava čas do výbuchu a následne zničí ničitelné kocky a zabije entity / hráčov.
+     */
     public void tick() {
-        if (this.start + (TIME_TO_EXPLODE * 1000) > System.currentTimeMillis()) {
+        if (this.start + TIME_TO_EXPLODE > System.currentTimeMillis()) {
             return;
         }
         if (this.exploded) {
@@ -66,7 +71,7 @@ public class Bomb {
         }
         this.image.makeInvisible();
         for (Tile tempTile : this.mappedExplosion.keySet()) {
-            if (tempTile.getBlock() == BlockType.BRICKS || tempTile.getBlock() == BlockType.GRASS) {
+            if (tempTile.getBlock().isDestroyable() || tempTile.getBlock() == BlockType.GRASS) {
                 this.mappedExplosion.get(tempTile).makeVisible();
                 tempTile.kill();
             }
@@ -76,11 +81,10 @@ public class Bomb {
     private void unexplodeTiles() {
         for (Tile tempTile : this.mappedExplosion.keySet()) {
             this.mappedExplosion.get(tempTile).makeInvisible();
-            if (tempTile.getBlock() == BlockType.BRICKS) {
+            if (tempTile.getBlock().isDestroyable()) {
                 tempTile.setBlock(BlockType.GRASS);
             }
         }
-        BOMB_MANAGER.stopManagingObject(this);
         this.tile.getGameCanvas().removeBomb(this);
     }
 
