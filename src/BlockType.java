@@ -12,7 +12,7 @@ public enum BlockType {
     BRICKS(false, true, "barrel", "barrel2");
 
     private static final Random RANDOM = new Random();
-    private static final String PATH = "src/images/blocks/";
+    private static final String PATH = "images/blocks/";
 
     private final boolean isPassable;
     private final boolean isDestroyable;
