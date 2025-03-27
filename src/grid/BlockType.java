@@ -1,3 +1,5 @@
+package grid;
+
 import fri.shapesge.ImageData;
 import java.util.Random;
 

@@ -1,4 +1,13 @@
+package grid;
+
+import entity.enemy.AbstractEnemy;
+import entity.Bomb;
+import entity.Player;
+import events.EntityEnterBlockEvent;
+import events.PlayerEnterBlockEvent;
 import fri.shapesge.Image;
+import fri.shapesge.ImageData;
+import grid.blocks.AbstractBlock;
 
 /**
  * Trieda tile, ktorá reprezentuje pomyselný priestor na hernom plátne. Na tomto priestore sa vykreslujú blocky.
@@ -9,6 +18,7 @@ public class Tile {
      * Veľkosť tilu a teda zároveň aj odporúčaná veľkosť blocku, ktorý sa má na ňom vykresliť
      */
     public static final int TILE_SIZE = 50;
+    private static final ImageData EMPTY_TILE = new ImageData("images/blocks/empty.png");
 
     private final Image image;
     private final int boardX;
@@ -16,6 +26,28 @@ public class Tile {
     private final GameCanvas gameCanvas;
 
     private BlockType blockType;
+    private AbstractBlock block;
+
+    public Tile(int boardX, int boardY, GameCanvas gameCanvas) {
+        this(boardX, boardY, gameCanvas, EMPTY_TILE);
+        this.block = null;
+    }
+
+    public Tile(int boardX, int boardY, GameCanvas gameCanvas, AbstractBlock block) {
+        this(boardX, boardY, gameCanvas, block == null ? EMPTY_TILE : block.getTexture());
+        if (block != null) {
+            this.block = block;
+        }
+    }
+
+    private Tile(int boardX, int boardY, GameCanvas gameCanvas, ImageData image) {
+        this.boardX = boardX;
+        this.boardY = boardY;
+        this.gameCanvas = gameCanvas;
+        this.image = new Image(image);
+        this.image.changePosition(Tile.TILE_SIZE * boardX, Tile.TILE_SIZE * boardY);
+        this.image.makeVisible();
+    }
 
     /**
      * Inicializuje nový tile s danými parametrami.
@@ -35,14 +67,11 @@ public class Tile {
         this.image.makeVisible();
     }
 
-    /**
-     * Preverí a vráti hodnotu či je možný vstup entity na daný tile.
-     */
-    public boolean entityEnterTile() {
-        if (!this.blockType.isPassable()) {
+    public boolean onEntityEnterTile(AbstractEnemy entity, Tile oldTile) {
+        if (!this.block.onEntityEnterBlock(new EntityEnterBlockEvent(entity, this, oldTile))) {
             return false;
         }
-        for (Entity e : this.gameCanvas.getEntities()) {
+        for (AbstractEnemy e : this.gameCanvas.getEntities()) {
             if (e.getTile() == this) {
                 return false;
             }
@@ -52,25 +81,29 @@ public class Tile {
                 return false;
             }
         }
-        if (this.gameCanvas.getPlayer() != null && this.gameCanvas.getPlayer().getTile() == this) {
-            this.gameCanvas.getPlayer().takeDamage(1);
-        }
         return true;
     }
 
-    /**
-     * Preverí a vráti hodnotu či je možný vstup hráča na daný tile.
-     */
-    public boolean playerEnterTile() {
-        if (this.blockType.isPassable() && this.gameCanvas.getPlayer() != null) {
-            for (Entity e : this.gameCanvas.getEntities()) {
+    public void afterEntityEnterTile(AbstractEnemy entity) {
+        this.block.afterEntityEnterBlockEvent(new EntityEnterBlockEvent(entity, this, this));
+        if (this.gameCanvas.getPlayer() != null && this.gameCanvas.getPlayer().getTile() == this) {
+            this.gameCanvas.getPlayer().takeDamage(1);
+        }
+    }
+
+    public boolean onPlayerEnterTile(Tile oldTile) {
+        return this.block.onPlayerEnterBlock(new PlayerEnterBlockEvent(this.gameCanvas.getPlayer(), this, oldTile));
+    }
+
+    public void afterPlayerEnterTile() {
+        this.block.afterPlayerEnterBlockEvent(new PlayerEnterBlockEvent(this.gameCanvas.getPlayer(), this, this));
+        if (this.gameCanvas.getPlayer() != null) {
+            for (AbstractEnemy e : this.gameCanvas.getEntities()) {
                 if (e.getTile() == this) {
                     this.gameCanvas.getPlayer().takeDamage(1);
-                    return true;
                 }
             }
         }
-        return this.blockType.isPassable();
     }
 
     /**
@@ -109,11 +142,19 @@ public class Tile {
         if (player != null && player.getTile() == this) {
             this.gameCanvas.killPlayer();
         }
-        for (Entity e : this.gameCanvas.getEntities()) {
+        for (AbstractEnemy e : this.gameCanvas.getEntities()) {
             if (e.getTile() == this) {
                 this.gameCanvas.killEntity(e);
             }
         }
+    }
+
+    public AbstractBlock getBlockT() {
+        return this.block;
+    }
+
+    public void setBlock(AbstractBlock block) {
+        this.block = block;
     }
 
     /**
@@ -121,14 +162,6 @@ public class Tile {
      */
     public BlockType getBlock() {
         return this.blockType;
-    }
-
-    /**
-     * Nastaví block, ktorý sa má vykresľovať na tomto tile.
-     */
-    public void setBlock(BlockType block) {
-        this.blockType = block;
-        this.image.changeImage(block.getImageData());
     }
 
 }

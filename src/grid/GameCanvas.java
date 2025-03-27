@@ -1,12 +1,22 @@
+package grid;
+
+import entity.enemy.AbstractEnemy;
+import entity.Bomb;
+import entity.EntityType;
+import entity.Player;
+import entity.enemy.EnemyRegister;
+import entity.movement.Direction;
 import fri.shapesge.FontStyle;
 import fri.shapesge.Manager;
 import fri.shapesge.Rectangle;
 import fri.shapesge.TextBlock;
+import grid.blocks.BlockRegister;
+import main.GameManager;
 
 import java.util.ArrayList;
 
 /**
- * Trieda GameCanvas, ktorá predstavuje herné plátno a má za účel spravovať akcie, ktoré sa na ňom dejú.
+ * Trieda grid.GameCanvas, ktorá predstavuje herné plátno a má za účel spravovať akcie, ktoré sa na ňom dejú.
  */
 public class GameCanvas {
 
@@ -16,13 +26,48 @@ public class GameCanvas {
 
     private final Manager gameManager = new Manager();
     private final Tile[][] tiles;
-    private final ArrayList<Entity> entities = new ArrayList<>();
+    private final ArrayList<AbstractEnemy> enemies = new ArrayList<>();
     private final ArrayList<Bomb> bombs = new ArrayList<>();
     private final Rectangle finalScreen = new Rectangle(0, 0);
     private final long start;
 
     private Player player = null;
     private boolean isPlaying = true;
+
+    /*
+    public <T extends AbstractBlock> GameCanvas(Class<T>[][] blocks) {
+        AbstractBlock[][] b = new AbstractBlock[blocks.length][];
+        for (int i = 0; i < blocks.length; i++) {
+            b[i] = new AbstractBlock[blocks[i].length];
+            for (int j = 0; j < blocks[i].length; j++) {
+                b[i][j] = AbstractBlock.getBlock(blocks[i][j]);
+            }
+        }
+    }
+     */
+
+    public GameCanvas(Map map) {
+        this(map.getBlocks());
+    }
+
+    public GameCanvas(BlockRegister[][] blocks) {
+        this.clearManagedObjects();
+
+        this.gameManager.manageObject(this);
+        this.start = System.currentTimeMillis();
+        this.finalScreen.changeSize(950, 550);
+
+        this.tiles = new Tile[blocks.length][];
+        for (int y = 0; y < blocks.length; y++) {
+            int length = blocks[y].length;
+            this.tiles[y] = new Tile[length];
+            for (int x = 0; x < length; x++) {
+                this.tiles[y][x] = blocks[y][x] == null ?
+                        new Tile(x, y, this) :
+                        new Tile(x, y, this, blocks[y][x].getNew());
+            }
+        }
+    }
 
     /**
      * Inicializuje nové herné plátno.
@@ -44,7 +89,7 @@ public class GameCanvas {
     }
 
     /**
-     * Vráti Tile na daných súradniciach array Tilov herného plátna. Null ak neexistuje.
+     * Vráti grid.Tile na daných súradniciach array Tilov herného plátna. Null ak neexistuje.
      *
      * @param x x-ová súradnica
      * @param y y-ová súradnica
@@ -57,7 +102,7 @@ public class GameCanvas {
     }
 
     /**
-     * Vráti Tile na daných reálnych súradniciach herného plátna. Null ak neexistuje.
+     * Vráti grid.Tile na daných reálnych súradniciach herného plátna. Null ak neexistuje.
      *
      * @param x x-ová súradnica
      * @param y y-ová súradnica
@@ -71,16 +116,16 @@ public class GameCanvas {
     /////////////
 
     /**
-     * Vytvorí novú entitu daného typu a položí ju na daný Tile.
+     * Vytvorí novú entitu daného typu a položí ju na daný grid.Tile.
      *
      * @param type typ entity, ktorá bude vytvorená
-     * @param at Tile (miesto) kde bude entita vytvorená
+     * @param at grid.Tile (miesto) kde bude entita vytvorená
      */
-    public void spawnEntity(EntityType type, Tile at) {
-        if (at.entityEnterTile()) {
-            Entity e = new Entity(type, at);
-            this.manageObject(e);
-            this.entities.add(e);
+    public void spawnEntity(EnemyRegister type, Tile at) {
+        AbstractEnemy enemy = type.getNew();
+        if (at.onEntityEnterTile(enemy, null)) {
+            enemy.setTile(at);
+            GameManager.getInstance().manageObjects(enemy);
         }
     }
 
@@ -89,10 +134,10 @@ public class GameCanvas {
      *
      * @param entity entita, ktorá bude zmazaná
      */
-    public void killEntity(Entity entity) {
-        this.entities.remove(entity);
+    public void killEntity(AbstractEnemy entity) {
+        this.enemies.remove(entity);
         entity.die();
-        if (this.entities.isEmpty() && this.player.getHealth() > 0) {
+        if (this.enemies.isEmpty() && this.player.getHealth() > 0) {
             this.win();
         }
     }
@@ -100,21 +145,21 @@ public class GameCanvas {
     /**
      * Vráti zoznam entít, ktoré sa aktívne nachádzajú na plátne.
      */
-    public Entity[] getEntities() {
-        return this.entities.toArray(new Entity[0]);
+    public AbstractEnemy[] getEntities() {
+        return this.enemies.toArray(new AbstractEnemy[0]);
     }
 
     /////////////
-    /// Player
+    /// entity.Player
     ///////////
 
     /**
      * Vytvorí nového hráča a položí ju na daný tile.
      *
-     * @param at Tile (miesto) kde bude hráč vytvorený
+     * @param at grid.Tile (miesto) kde bude hráč vytvorený
      */
     public void spawnPlayer(Tile at) {
-        if (at.playerEnterTile()) {
+        if (at.onPlayerEnterTile(null)) {
             Player p = new Player(at);
             this.manageObject(p);
             this.player = p;
@@ -137,14 +182,14 @@ public class GameCanvas {
     }
 
     //////////
-    /// Bomb
+    /// entity.Bomb
     ////////
 
     /**
      * Vytvorí, aktivuje a položí novú bombu na daný tile.
      * Následne vráti boolean hodnotu či sa podarilo bombu vytvoriť.
      *
-     * @param at Tile (miesto) kde bude bomba vytvorená
+     * @param at grid.Tile (miesto) kde bude bomba vytvorená
      */
     public boolean spawnBomb(Tile at) {
         if (at.bombEnterTile()) {

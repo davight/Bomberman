@@ -1,5 +1,9 @@
+package entity;
+
 import fri.shapesge.Image;
-import fri.shapesge.ImageData;
+import grid.GameCanvas;
+import grid.Tile;
+import resources.ImageManager;
 
 import java.util.HashMap;
 
@@ -9,11 +13,9 @@ import java.util.HashMap;
 public class Bomb {
 
     private static final int TIME_TO_EXPLODE = 2000;
-    private static final ImageData BOMB_IMAGE = new ImageData("images/misc/bomb.png");
-    private static final ImageData EXPLOSION_IMAGE = new ImageData("images/misc/explosion.png");
 
     private final HashMap<Tile, Image> mappedExplosion = new HashMap<>(9);
-    private final Image image = new Image(BOMB_IMAGE);
+    private final Image image = new Image(ImageManager.getImage("images/misc/bomb.png"));
     private final Tile tile;
 
     private long start;
@@ -34,7 +36,7 @@ public class Bomb {
             for (int j = tile.getBoardY() - 1; j <= tile.getBoardY() + 1; j++) {
                 Tile tempTile = canvas.getTileAtBoard(i, j);
                 if (tempTile != null) {
-                    Image tempImage = new Image(EXPLOSION_IMAGE);
+                    Image tempImage = new Image(ImageManager.getImage("images/misc/explosion.png"));
                     tempImage.changePosition(tempTile.getBoardX() * Tile.TILE_SIZE, tempTile.getBoardY() * Tile.TILE_SIZE);
                     this.mappedExplosion.put(tempTile, tempImage);
                 }
@@ -71,7 +73,7 @@ public class Bomb {
         }
         this.image.makeInvisible();
         for (Tile tempTile : this.mappedExplosion.keySet()) {
-            if (tempTile.getBlock().isDestroyable() || tempTile.getBlock() == BlockType.GRASS) {
+            if (tempTile.getBlockT().afterBlockExplosionEvent().isPresent()) {
                 this.mappedExplosion.get(tempTile).makeVisible();
                 tempTile.kill();
             }
@@ -81,9 +83,7 @@ public class Bomb {
     private void unexplodeTiles() {
         for (Tile tempTile : this.mappedExplosion.keySet()) {
             this.mappedExplosion.get(tempTile).makeInvisible();
-            if (tempTile.getBlock().isDestroyable()) {
-                tempTile.setBlock(BlockType.GRASS);
-            }
+            tempTile.getBlockT().afterBlockExplosionEvent().ifPresent(blockRegister -> tempTile.setBlock(blockRegister.getNew()));
         }
         this.tile.getGameCanvas().removeBomb(this);
     }

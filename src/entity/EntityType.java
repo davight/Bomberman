@@ -1,3 +1,5 @@
+package entity;
+
 import fri.shapesge.ImageData;
 
 /**

@@ -1,3 +1,8 @@
+package grid;
+
+import entity.EntityType;
+import grid.blocks.BlockRegister;
+
 import java.util.Random;
 
 public class Main {
@@ -33,7 +38,9 @@ public class Main {
     };
 
     public static void main(String[] args) {
-        startGame();
+        //startGame();
+        GameCanvas gameCanvas = new GameCanvas(new BlockRegister[][]{{BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS}, {null, null, BlockRegister.STONE}, {}, {BlockRegister.BRICKS}});
+
     }
 
     public static void startGame() {
@@ -42,16 +49,16 @@ public class Main {
             case 0:
                 gameCanvas = new GameCanvas(BOARD1);
                 gameCanvas.spawnPlayer(gameCanvas.getTileAtBoard(1, 1));
-                gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(9, 9));
-                gameCanvas.spawnEntity(EntityType.CLASSIC, gameCanvas.getTileAtBoard(5, 3));
-                gameCanvas.spawnEntity(EntityType.SPEEDY, gameCanvas.getTileAtBoard(4, 4));
+                //gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(9, 9));
+                //gameCanvas.spawnEntity(EntityType.CLASSIC, gameCanvas.getTileAtBoard(5, 3));
+                //gameCanvas.spawnEntity(EntityType.SPEEDY, gameCanvas.getTileAtBoard(4, 4));
                 break;
             case 1:
                 gameCanvas = new GameCanvas(BOARD2);
                 gameCanvas.spawnPlayer(gameCanvas.getTileAtBoard(1, 1));
-                gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(9, 9));
-                gameCanvas.spawnEntity(EntityType.CLASSIC, gameCanvas.getTileAtBoard(5, 3));
-                gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(4, 4));
+                //gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(9, 9));
+                //gameCanvas.spawnEntity(EntityType.CLASSIC, gameCanvas.getTileAtBoard(5, 3));
+                //gameCanvas.spawnEntity(EntityType.EXPLOSIVE, gameCanvas.getTileAtBoard(4, 4));
                 break;
         }
 
