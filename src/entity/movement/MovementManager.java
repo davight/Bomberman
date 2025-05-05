@@ -1,28 +1,25 @@
 package entity.movement;
 
+import fri.shapesge.ImageData;
 import grid.Tile;
 import main.GameManager;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Trieda entity.movement.Movement, ktorá sa stará o plynulý pohyb entít a hráča po plátne.
  */
 public class MovementManager {
 
-    private final HashMap<Direction, Direction.Pack> registeredDirectionPacks = new HashMap<>();
+    private final Map<Direction, Pack> registeredDirectionPacks;
     private final Movable movable;
 
     private Movement activeMovement = null;
 
     public MovementManager(Movable movable) {
         this.movable = movable;
-        for (Direction.Pack pack : movable.getValidDirections()) {
-            if (pack.inBetween().length == 0) {
-                throw new RuntimeException("You need to provide at least one valid image.");
-            }
-            this.registeredDirectionPacks.put(pack.dir(), pack);
-        }
+        this.registeredDirectionPacks = movable.getValidDirections();
         GameManager.getInstance().manageObjects(this);
     }
 
@@ -76,12 +73,16 @@ public class MovementManager {
         this.activeMovement = null;
     }
 
+    public Set<Direction> getValidDirections() {
+        return this.registeredDirectionPacks.keySet();
+    }
+
     private class Movement {
 
         private final Direction dir;
         private final Tile from;
         private final Tile to;
-        private final Direction.Pack pack;
+        private final Pack pack;
         private final int maxStep;
 
         private long lastMs;
@@ -89,7 +90,7 @@ public class MovementManager {
 
         private Movement(Direction direction, Tile from, Tile to) {
             this.pack = MovementManager.this.registeredDirectionPacks.get(direction);
-            this.maxStep = this.pack.inBetween().length;
+            this.maxStep = this.pack.moving().length;
             this.step = 0;
             this.dir = direction;
             this.to = to;
@@ -107,7 +108,7 @@ public class MovementManager {
                 MovementManager.this.movable.getImage().changeImage(this.pack.staying());
                 MovementManager.this.movable.afterMovementEvent(this.to);
             } else {
-                MovementManager.this.movable.getImage().changeImage(this.pack.inBetween()[this.step]);
+                MovementManager.this.movable.getImage().changeImage(this.pack.moving(this.step));
                 this.step++;
             }
         }
@@ -118,7 +119,12 @@ public class MovementManager {
                     (this.from.getBoardY() * Tile.TILE_SIZE) + (n * ((Tile.TILE_SIZE / this.maxStep) * this.dir.getY()))
             );
         }
+    }
 
+    public record Pack(ImageData staying, ImageData... moving) {
+        private ImageData moving(int n) {
+            return this.moving[n];
+        }
     }
 
 }

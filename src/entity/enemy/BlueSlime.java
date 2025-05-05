@@ -1,9 +1,11 @@
 package entity.enemy;
 
 import entity.movement.Direction;
+import entity.movement.MovementManager;
 import fri.shapesge.Image;
-import fri.shapesge.ImageData;
 import resources.ImageManager;
+
+import java.util.Map;
 
 public class BlueSlime extends AbstractEnemy {
 
@@ -27,10 +29,10 @@ public class BlueSlime extends AbstractEnemy {
     }
 
     @Override
-    public Direction.Pack[] getValidDirections() {
-        return new Direction.Pack[] {
-            new Direction.Pack(Direction.UP, ImageManager.getImage("st"), new ImageData[]{}),
-            new Direction.Pack(Direction.DOWN, ImageManager.getImage("st"), new ImageData[]{}),
-        };
+    public Map<Direction, MovementManager.Pack> getValidDirections() {
+        return Map.of(
+                Direction.UP, new MovementManager.Pack(ImageManager.getImage("st"), null),
+                Direction.DOWN, new MovementManager.Pack(ImageManager.getImage("st"), null)
+        );
     }
 }

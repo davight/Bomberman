@@ -35,9 +35,7 @@ public class Tile {
 
     public Tile(int boardX, int boardY, GameCanvas gameCanvas, AbstractBlock block) {
         this(boardX, boardY, gameCanvas, block == null ? EMPTY_TILE : block.getTexture());
-        if (block != null) {
-            this.block = block;
-        }
+        this.block = block;
     }
 
     private Tile(int boardX, int boardY, GameCanvas gameCanvas, ImageData image) {
@@ -68,6 +66,9 @@ public class Tile {
     }
 
     public boolean onEntityEnterTile(AbstractEnemy entity, Tile oldTile) {
+        if (this.block == null) {
+            return false;
+        }
         if (!this.block.onEntityEnterBlock(new EntityEnterBlockEvent(entity, this, oldTile))) {
             return false;
         }
@@ -92,6 +93,9 @@ public class Tile {
     }
 
     public boolean onPlayerEnterTile(Tile oldTile) {
+        if (this.block == null) {
+            return false;
+        }
         return this.block.onPlayerEnterBlock(new PlayerEnterBlockEvent(this.gameCanvas.getPlayer(), this, oldTile));
     }
 

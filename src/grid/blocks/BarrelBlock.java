@@ -6,11 +6,11 @@ import events.PlayerEnterBlockEvent;
 import java.util.Optional;
 import java.util.Random;
 
-public class BricksBlock extends AbstractBlock {
+public class BarrelBlock extends AbstractBlock {
 
     private static final Random RANDOM = new Random();
 
-    protected BricksBlock() {
+    protected BarrelBlock() {
         super("barrel", "barrel2");
     }
 

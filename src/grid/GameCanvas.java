@@ -2,15 +2,14 @@ package grid;
 
 import entity.enemy.AbstractEnemy;
 import entity.Bomb;
-import entity.EntityType;
 import entity.Player;
 import entity.enemy.EnemyRegister;
-import entity.movement.Direction;
 import fri.shapesge.FontStyle;
 import fri.shapesge.Manager;
 import fri.shapesge.Rectangle;
 import fri.shapesge.TextBlock;
 import grid.blocks.BlockRegister;
+import grid.map.Map;
 import main.GameManager;
 
 import java.util.ArrayList;
@@ -45,10 +44,6 @@ public class GameCanvas {
         }
     }
      */
-
-    public GameCanvas(Map map) {
-        this(map.getBlocks());
-    }
 
     public GameCanvas(BlockRegister[][] blocks) {
         this.clearManagedObjects();

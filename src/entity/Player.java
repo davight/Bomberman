@@ -10,6 +10,7 @@ import grid.Tile;
 import resources.ImageManager;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Trieda player predstavuje hráča ovládaného používateľom pomocou klávesnice.
@@ -149,19 +150,6 @@ public class Player implements Movable {
         tile.afterPlayerEnterTile();
     }
 
-    /**
-     * this.movement.registerDirection(Direction.UP, "images/player/up_staying.png", "images/player/up_moving.png");
-     * this.movement.registerDirection(Direction.DOWN, "images/player/down_staying.png", "images/player/down_moving.png");
-     * this.movement.registerDirection(Direction.LEFT, "images/player/left_staying.png", "images/player/left_moving.png");
-     * this.movement.registerDirection(Direction.RIGHT, "images/player/right_staying.png", "images/player/right_moving.png");
-     *
-     *
-     *
-     *
-     * */
-
-
-
     @Override
     public Image getImage() {
         return this.image;
@@ -173,13 +161,13 @@ public class Player implements Movable {
     }
 
     @Override
-    public Direction.Pack[] getValidDirections() {
-        return new Direction.Pack[] {
-            new Direction.Pack(Direction.UP, ImageManager.getImage("player/up_staying"), new ImageData[]{ImageManager.getImage("player/up_moving")}),
-            new Direction.Pack(Direction.DOWN, ImageManager.getImage("player/down_staying"), new ImageData[]{ImageManager.getImage("player/down_moving")}),
-            new Direction.Pack(Direction.LEFT, ImageManager.getImage("player_left_staying"), new ImageData[]{ImageManager.getImage("player/left_moving")}),
-            new Direction.Pack(Direction.RIGHT, ImageManager.getImage("player/right_staying"), new ImageData[]{ImageManager.getImage("player/right_moving")}),
-        };
+    public Map<Direction, MovementManager.Pack> getValidDirections() {
+        return Map.of(
+                Direction.UP, new MovementManager.Pack(ImageManager.getImage("player/up_staying"), ImageManager.getImage("player/up_moving")),
+                Direction.DOWN, new MovementManager.Pack(ImageManager.getImage("player/down_staying"), ImageManager.getImage("player/down_moving")),
+                Direction.LEFT, new MovementManager.Pack(ImageManager.getImage("player_left_staying"), ImageManager.getImage("player/left_moving")),
+                Direction.RIGHT, new MovementManager.Pack(ImageManager.getImage("player/right_staying"), ImageManager.getImage("player/right_moving"))
+        );
     }
 
 }

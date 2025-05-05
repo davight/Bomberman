@@ -2,6 +2,8 @@ package grid;
 
 import entity.EntityType;
 import grid.blocks.BlockRegister;
+import grid.map.Map;
+import grid.map.RandomMap;
 
 import java.util.Random;
 
@@ -39,8 +41,10 @@ public class Main {
 
     public static void main(String[] args) {
         //startGame();
-        GameCanvas gameCanvas = new GameCanvas(new BlockRegister[][]{{BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS}, {null, null, BlockRegister.STONE}, {}, {BlockRegister.BRICKS}});
-
+        //GameCanvas gameCanvas = new GameCanvas(new BlockRegister[][]{{BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS}, {null, null, BlockRegister.STONE}, {}, {BlockRegister.BRICKS}});
+        RandomMap randomMap = new RandomMap();
+        randomMap.printMap();
+        Map map = new Map(randomMap.getMapChunks(), null);
     }
 
     public static void startGame() {

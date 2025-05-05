@@ -8,10 +8,10 @@ import grid.GameCanvas;
 import grid.Tile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 public abstract class AbstractEnemy implements Movable {
+
     private final Image image;
     private final MovementManager movement;
 
@@ -49,7 +49,11 @@ public abstract class AbstractEnemy implements Movable {
     }
 
     public final void tick() {
-        if (this.lastMillis + this.getTimeBetweenSteps() * 10L > System.currentTimeMillis() || this.movement.isActive() || !this.isAlive) {
+        if (!this.isAlive) {
+            this.image.makeInvisible();
+            return;
+        }
+        if (this.lastMillis + this.getTimeBetweenSteps() * 10L > System.currentTimeMillis() || this.movement.isActive()) {
             return;
         }
         Tile playerTile = this.gameCanvas.getPlayer().getTile();
@@ -65,7 +69,7 @@ public abstract class AbstractEnemy implements Movable {
                 }
             }
             if (seePlayer) {
-                arr = shuffleExcept(this.tile.getBoardX() > playerTile.getBoardX() ? Direction.LEFT : Direction.RIGHT);
+                arr = this.shuffleExcept(this.tile.getBoardX() > playerTile.getBoardX() ? Direction.LEFT : Direction.RIGHT);
             }
         } else if (playerTile.getBoardY() == this.tile.getBoardY()) { // They are on the same Y coords...
             int x = this.tile.getBoardX();
@@ -78,7 +82,7 @@ public abstract class AbstractEnemy implements Movable {
                 }
             }
             if (seePlayer) {
-                arr = shuffleExcept(this.tile.getBoardY() > playerTile.getBoardY() ? Direction.UP : Direction.DOWN);
+                arr = this.shuffleExcept(this.tile.getBoardY() > playerTile.getBoardY() ? Direction.UP : Direction.DOWN);
             }
         }
         if (arr == null) {
@@ -124,8 +128,12 @@ public abstract class AbstractEnemy implements Movable {
 
     public abstract void ultimate();
 
-    private static Direction[] shuffleExcept(Direction dir) {
-        ArrayList<Direction> directions = new ArrayList<>(Arrays.asList(Direction.values()));
+    private Direction[] validDirections() {
+        return null;
+    }
+
+    private Direction[] shuffleExcept(Direction dir) {
+        ArrayList<Direction> directions = new ArrayList<>(this.getValidDirections().keySet());
         directions.remove(dir);
         Collections.shuffle(directions);
         directions.addFirst(dir);

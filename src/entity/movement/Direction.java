@@ -1,7 +1,5 @@
 package entity.movement;
 
-import fri.shapesge.ImageData;
-
 import java.util.Random;
 
 /**
@@ -39,9 +37,6 @@ public enum Direction {
             arr[randomIndex] = temp;
         }
         return arr;
-    }
-
-    public record Pack(Direction dir, ImageData staying, ImageData[] inBetween) {
     }
 
 }

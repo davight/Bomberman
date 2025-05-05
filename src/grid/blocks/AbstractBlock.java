@@ -26,8 +26,7 @@ public abstract class AbstractBlock {
 
         this.images = new ImageData[textures.length];
         this.activeImage = activeImage;
-
-        for (int i = 0; i < textures.length; i++) {
+        for (int i = 0; i < textures.length; i++) { // check for image sizes?
             this.images[i] = ImageManager.getImage("blocks/" + textures[i]);
         }
     }

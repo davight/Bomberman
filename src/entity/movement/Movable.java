@@ -3,16 +3,17 @@ package entity.movement;
 import fri.shapesge.Image;
 import grid.Tile;
 
+import java.util.Map;
+
 public interface Movable {
 
     Image getImage();
 
     int getTimeBetweenSteps();
 
-    Direction.Pack[] getValidDirections();
+    Map<Direction, MovementManager.Pack> getValidDirections();
 
     default void afterMovementEvent(Tile tile) {
     }
-
 
 }

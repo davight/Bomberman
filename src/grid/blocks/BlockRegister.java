@@ -5,7 +5,10 @@ import java.util.function.Supplier;
 public enum BlockRegister {
 
     BARRIER(BarrierBlock::new),
-    BRICKS(BricksBlock::new),
+    BARREL(BarrelBlock::new),
+    COLOR(ColorBlock::new),
+    FIRE(FireBlock::new),
+    SPIKES(SpikesBlock::new),
     GRASS(GrassBlock::new),
     WATER(WaterBlock::new),
     STONE(StoneBlock::new);
