@@ -17,6 +17,11 @@ public class BarrierBlock extends AbstractBlock {
     }
 
     @Override
+    public boolean isSpawnable() {
+        return false;
+    }
+
+    @Override
     public Optional<BlockRegister> afterBlockExplosionEvent() {
         return Optional.empty();
     }

@@ -1,8 +1,8 @@
 package events;
 
-import entity.Player;
-import grid.Tile;
+import entity.player.AbstractPlayer;
+import grid.map.Tile;
 
-public record PlayerEnterBlockEvent(Player player, Tile newTile, Tile oldTile) {
+public record PlayerEnterBlockEvent(AbstractPlayer player, Tile newTile, Tile oldTile) {
 
 }

@@ -1,7 +1,7 @@
 package events;
 
-import entity.Player;
+import entity.player.AbstractPlayer;
 import entity.enemy.AbstractEnemy;
 
-public record PlayerCollisionWithEnemyEvent(Player player, AbstractEnemy enemy) {
+public record PlayerCollisionWithEnemyEvent(AbstractPlayer player, AbstractEnemy enemy) {
 }

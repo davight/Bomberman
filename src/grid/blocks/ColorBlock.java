@@ -1,11 +1,12 @@
 package grid.blocks;
 
+import events.AfterEntityEnterBlockListener;
 import events.EntityEnterBlockEvent;
 import events.PlayerEnterBlockEvent;
 
 import java.util.Optional;
 
-public class ColorBlock extends AbstractBlock {
+public class ColorBlock extends AbstractBlock implements AfterEntityEnterBlockListener {
 
     protected ColorBlock() {
         super("red_block", "green_block", "blue_block");
@@ -13,6 +14,11 @@ public class ColorBlock extends AbstractBlock {
 
     @Override
     public boolean isSeeThrough() {
+        return true;
+    }
+
+    @Override
+    public boolean isSpawnable() {
         return true;
     }
 
@@ -27,7 +33,7 @@ public class ColorBlock extends AbstractBlock {
     }
 
     @Override
-    public void afterEntityEnterBlockEvent(EntityEnterBlockEvent e) {
+    public void afterEnemyEnterBlock(EntityEnterBlockEvent e) {
         this.setRandomTexture();
     }
 
@@ -37,7 +43,7 @@ public class ColorBlock extends AbstractBlock {
     }
 
     @Override
-    public void afterPlayerEnterBlockEvent(PlayerEnterBlockEvent e) {
+    public void afterPlayerEnterBlock(PlayerEnterBlockEvent e) {
         this.setRandomTexture();
     }
 }

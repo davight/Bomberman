@@ -1,8 +1,9 @@
 package entity.movement;
 
 import fri.shapesge.ImageData;
-import grid.Tile;
-import main.GameManager;
+import game.Game;
+import grid.map.Tile;
+import util.Waiter;
 
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class MovementManager {
     public MovementManager(Movable movable) {
         this.movable = movable;
         this.registeredDirectionPacks = movable.getValidDirections();
-        GameManager.getInstance().manageObjects(this);
+        Game.getInstance().manageObject(this);
     }
 
     /**
@@ -59,15 +60,6 @@ public class MovementManager {
         }
     }
 
-    /**
-     * ShapesGE listener ticku. Spravuje kroky pri pohybe obrázku.
-     */
-    public void tick() {
-        if (this.activeMovement != null) {
-            this.activeMovement.tick();
-        }
-    }
-
     private void afterMovementEvent(Tile at) {
         this.movable.afterMovementEvent(at);
         this.activeMovement = null;
@@ -90,27 +82,34 @@ public class MovementManager {
 
         private Movement(Direction direction, Tile from, Tile to) {
             this.pack = MovementManager.this.registeredDirectionPacks.get(direction);
-            this.maxStep = this.pack.moving().length;
+            this.maxStep = Math.max(this.pack.moving().length, 3);
             this.step = 0;
             this.dir = direction;
             this.to = to;
             this.from = from;
             this.lastMs = System.currentTimeMillis();
+
+            Waiter moving = new Waiter(MovementManager.this.movable.getTimeBetweenSteps(), this::movingStep);
+            Waiter start = moving;
+            for (int i = 0; i < this.maxStep - 1; i++) {
+                moving = moving.andThen(new Waiter(MovementManager.this.movable.getTimeBetweenSteps(), this::movingStep));
+            }
+            moving.andThen(new Waiter(MovementManager.this.movable.getTimeBetweenSteps(), this::lastStep));
+
+            start.waitAndRun();
         }
 
-        private void tick() {
-            if (this.lastMs + MovementManager.this.movable.getTimeBetweenSteps() > System.currentTimeMillis()) {
-                return;
-            }
-            this.lastMs = System.currentTimeMillis();
+        private void movingStep(Waiter waiter) {
             this.moveTo(this.step);
-            if (this.step == this.maxStep) {
-                MovementManager.this.movable.getImage().changeImage(this.pack.staying());
-                MovementManager.this.movable.afterMovementEvent(this.to);
-            } else {
-                MovementManager.this.movable.getImage().changeImage(this.pack.moving(this.step));
-                this.step++;
-            }
+            int i = this.step >= this.pack.moving().length ? this.pack.moving().length - 1 : this.step;
+            MovementManager.this.movable.getImage().changeImage(this.pack.moving(i));
+            this.step++;
+        }
+
+        private void lastStep(Waiter waiter) {
+            this.moveTo(this.step);
+            MovementManager.this.movable.getImage().changeImage(this.pack.staying());
+            MovementManager.this.afterMovementEvent(this.to);
         }
 
         private void moveTo(int n) {

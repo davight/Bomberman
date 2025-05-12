@@ -1,14 +1,12 @@
 package grid.map;
 
 import entity.movement.Direction;
+import util.Util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Random;
 
 public class RandomMap {
-
-    private static final Random RAND = new Random();
 
     private static final int MINIMUM_CHUNKS = 4;
     private static final int MAXIMUM_CHUNKS = Map.WIDTH_CHUNKS * Map.HEIGHT_CHUNKS;
@@ -25,13 +23,12 @@ public class RandomMap {
             }
         }
 
-        int numberOfChunks = RAND.nextInt(MINIMUM_CHUNKS, MAXIMUM_CHUNKS + 1);
+        int numberOfChunks = Util.randomInt(MINIMUM_CHUNKS, MAXIMUM_CHUNKS);
         ArrayList<Chunk> randomChunks = new ArrayList<>(numberOfChunks);
         for (int i = 0; i < numberOfChunks; i++) {
             randomChunks.add(Chunk.getRandomChunk());
         }
 
-        System.out.println(randomChunks);
         int startRow = Map.HEIGHT_CHUNKS / 2;
         int startCol = Map.WIDTH_CHUNKS / 2;
 
@@ -41,7 +38,7 @@ public class RandomMap {
         this.addAdjacentPositions(startPos);
 
         while (!randomChunks.isEmpty() && !this.adjancedPositions.isEmpty()) {
-            ChunkPosition random = this.adjancedPositions.get(RAND.nextInt(this.adjancedPositions.size()));
+            ChunkPosition random = this.adjancedPositions.get(Util.randomInt(0, this.adjancedPositions.size() - 1));
             chunks[random.row()][random.column()] = randomChunks.removeFirst();
             this.usedPositions.add(random);
 
@@ -70,18 +67,4 @@ public class RandomMap {
 
     private record ChunkPosition(int row, int column) {
     }
-
-    public void printMap() {
-        for (int i = 0; i < Map.HEIGHT_CHUNKS; i++) {
-            for (int j = 0; j < Map.WIDTH_CHUNKS; j++) {
-                if (this.mapChunks[i][j] == Chunk.EMPTY_CHUNK) {
-                    System.out.print("□ ");
-                } else {
-                    System.out.print("■ ");
-                }
-            }
-            System.out.println();
-        }
-    }
-
 }

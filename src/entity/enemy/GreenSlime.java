@@ -8,11 +8,11 @@ import util.Util;
 
 import java.util.Map;
 
-public class BlueSlime extends AbstractEnemy {
+public class GreenSlime extends AbstractEnemy {
 
-    private static final String PATH = "entity/explosive/";
+    private static final String PATH = "entity/classic/";
 
-    public BlueSlime() {
+    public GreenSlime() {
         super();
     }
 
@@ -28,14 +28,16 @@ public class BlueSlime extends AbstractEnemy {
 
     @Override
     public int getTimeBetweenSteps() {
-        return Util.randomInt(50, 60);
+        return Util.randomInt(90, 110);
     }
 
     @Override
     public Map<Direction, MovementManager.Pack> getValidDirections() {
         return Map.of(
                 Direction.UP, new MovementManager.Pack(ImageManager.getImage(PATH + "staying"), ImageManager.getImage(PATH + "up_moving")),
-                Direction.DOWN, new MovementManager.Pack(ImageManager.getImage(PATH + "staying"), ImageManager.getImage(PATH + "down_moving"))
+                Direction.DOWN, new MovementManager.Pack(ImageManager.getImage(PATH + "staying"), ImageManager.getImage(PATH + "down_moving")),
+                Direction.LEFT, new MovementManager.Pack(ImageManager.getImage(PATH + "staying"), ImageManager.getImage(PATH + "left_moving")),
+                Direction.RIGHT, new MovementManager.Pack(ImageManager.getImage(PATH + "staying"), ImageManager.getImage(PATH + "right_moving"))
         );
     }
 }

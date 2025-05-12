@@ -1,8 +1,7 @@
 package entity;
 
 import fri.shapesge.Image;
-import grid.GameCanvas;
-import grid.Tile;
+import grid.map.Tile;
 import resources.ImageManager;
 
 import java.util.HashMap;
@@ -31,10 +30,11 @@ public class Bomb {
         this.image.changePosition(tile.getBoardX() * Tile.TILE_SIZE, tile.getBoardY() * Tile.TILE_SIZE);
         this.image.makeVisible();
 
-        GameCanvas canvas = tile.getGameCanvas();
+        //GameCanvas canvas = null;
         for (int i = tile.getBoardX() - 1; i <= tile.getBoardX() + 1; i++) {
             for (int j = tile.getBoardY() - 1; j <= tile.getBoardY() + 1; j++) {
-                Tile tempTile = canvas.getTileAtBoard(i, j);
+                //Tile tempTile = canvas.getTileAtBoard(i, j);
+                Tile tempTile = null;
                 if (tempTile != null) {
                     Image tempImage = new Image(ImageManager.getImage("images/misc/explosion.png"));
                     tempImage.changePosition(tempTile.getBoardX() * Tile.TILE_SIZE, tempTile.getBoardY() * Tile.TILE_SIZE);
@@ -68,14 +68,14 @@ public class Bomb {
     }
 
     private void explodeTiles() {
-        if (!this.tile.getGameCanvas().isPlaying()) {
-            return;
-        }
+//        if (!this.tile.getGameCanvas().isPlaying()) {
+//            return;
+//        }
         this.image.makeInvisible();
         for (Tile tempTile : this.mappedExplosion.keySet()) {
-            if (tempTile.getBlockT().afterBlockExplosionEvent().isPresent()) {
+            if (tempTile.getBlock().afterBlockExplosionEvent().isPresent()) {
                 this.mappedExplosion.get(tempTile).makeVisible();
-                tempTile.kill();
+                tempTile.killAll();
             }
         }
     }
@@ -83,9 +83,9 @@ public class Bomb {
     private void unexplodeTiles() {
         for (Tile tempTile : this.mappedExplosion.keySet()) {
             this.mappedExplosion.get(tempTile).makeInvisible();
-            tempTile.getBlockT().afterBlockExplosionEvent().ifPresent(blockRegister -> tempTile.setBlock(blockRegister.getNew()));
+            tempTile.getBlock().afterBlockExplosionEvent().ifPresent(blockRegister -> tempTile.setBlock(blockRegister.getNew()));
         }
-        this.tile.getGameCanvas().removeBomb(this);
+        //this.tile.getGameCanvas().removeBomb(this);
     }
 
 }

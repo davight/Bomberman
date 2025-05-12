@@ -15,6 +15,11 @@ public class BarrelBlock extends AbstractBlock {
     }
 
     @Override
+    public boolean isSpawnable() {
+        return false;
+    }
+
+    @Override
     public boolean isSeeThrough() {
         return false;
     }

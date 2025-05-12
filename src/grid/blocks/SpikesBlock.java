@@ -1,11 +1,12 @@
 package grid.blocks;
 
+import events.AfterEntityEnterBlockListener;
 import events.EntityEnterBlockEvent;
 import events.PlayerEnterBlockEvent;
 
 import java.util.Optional;
 
-public class SpikesBlock extends AbstractBlock {
+public class SpikesBlock extends AbstractBlock implements AfterEntityEnterBlockListener {
 
     private boolean detonated;
 
@@ -20,6 +21,11 @@ public class SpikesBlock extends AbstractBlock {
     }
 
     @Override
+    public boolean isSpawnable() {
+        return false;
+    }
+
+    @Override
     public Optional<BlockRegister> afterBlockExplosionEvent() {
         this.detonated = true;
         return Optional.empty();
@@ -31,14 +37,18 @@ public class SpikesBlock extends AbstractBlock {
     }
 
     @Override
+    public void afterEnemyEnterBlock(EntityEnterBlockEvent e) {
+    }
+
+    @Override
     public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
         return true;
     }
 
     @Override
-    public void afterPlayerEnterBlockEvent(PlayerEnterBlockEvent e) {
+    public void afterPlayerEnterBlock(PlayerEnterBlockEvent e) {
         if (!this.detonated) {
-            e.player().takeDamage(1);
+            e.player().hurt(1);
             this.setTexture(1);
             this.detonated = true;
         }

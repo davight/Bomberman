@@ -1,10 +1,10 @@
 package grid.map;
 
 import grid.blocks.BlockRegister;
+import util.Util;
+import util.WeightedRandomness;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.UUID;
 
 public class Chunk {
@@ -13,14 +13,10 @@ public class Chunk {
     public static final int HEIGHT = 5;
 
     private static final int SIZE = WIDTH * HEIGHT;
-    private static final Random RAND = new Random();
-    private static final ArrayList<Chunk> KNOWN_CHUNKS = new ArrayList<>();
-
-    private static int sumWeight = 0;
+    private static final WeightedRandomness<Chunk> CHUNKS = new WeightedRandomness<>();
 
     private final UUID uuid;
     private final BlockRegister[][] blocks;
-    private int weight;
 
     public static final Chunk EMPTY_CHUNK = new Chunk(fill(SIZE, BlockRegister.BARRIER));
 
@@ -40,10 +36,10 @@ public class Chunk {
         new Chunk(1,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.WATER, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.WATER, BlockRegister.WATER, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.GRASS,
+                BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS,
+                BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
-        new Chunk(1,
+        new Chunk(
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.FIRE, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS, BlockRegister.GRASS,
@@ -51,9 +47,9 @@ public class Chunk {
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
         new Chunk(1,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
+                BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS,
+                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS, BlockRegister.GRASS,
+                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
         new Chunk(1,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
@@ -83,31 +79,20 @@ public class Chunk {
                 i++;
             }
         }
-        this.weight = 0;
     }
 
     private Chunk(int weight, BlockRegister... blocks) {
         this(blocks);
-        this.weight = weight;
-        sumWeight += weight;
-        KNOWN_CHUNKS.add(this);
+        CHUNKS.add(this, weight);
     }
 
     public static Chunk getRandomChunk() {
-        double r = RAND.nextDouble() * sumWeight;
-        int c = 0;
-        for (Chunk chunk : KNOWN_CHUNKS) {
-            c += chunk.weight;
-            if (c >= r) {
-                return chunk;
-            }
-        }
-        return null;
+        return CHUNKS.getRandom();
     }
 
     public BlockRegister[][] getBlocks() {
-        int rotation = RAND.nextInt(4);
-        if (rotation == 0) {
+        int rotation = Util.randomInt(0, 4);
+        if (rotation == 0 || rotation == 4) {
             return this.blocks;
         }
         BlockRegister[][] toRotate = this.blocks;
