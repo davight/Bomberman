@@ -36,7 +36,7 @@ public class Waiter {
     }
 
     public void waitAndRun() {
-        Game.getInstance().manageObject(this);
+        Game.manageObject(this);
         if (this.waiting) {
             throw new IllegalStateException("Waiting already!");
         }
@@ -44,6 +44,7 @@ public class Waiter {
         this.startTime = System.currentTimeMillis();
     }
 
+    @ShapesGeListener
     public void tick() {
         if (this.waiting && System.currentTimeMillis() - this.startTime >= this.waitDuration) {
             this.waiting = false;
@@ -53,7 +54,7 @@ public class Waiter {
             } else if (this.thenRun != null) { // cant run other waiter when its set to repeat
                 this.thenRun.waitAndRun();
             }
-            Game.getInstance().stopManagingObject(this);
+            Game.stopManagingObject(this);
         }
     }
 

@@ -1,18 +1,23 @@
 package grid.blocks;
 
-import events.AfterEntityEnterBlockListener;
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
+import events.EnemyEnterTileEvent;
+import events.EventManager;
+import events.PlayerEnterTileEvent;
+import events.PlayerStepOnBlockEvent;
 
-import java.util.Optional;
-
-public class SpikesBlock extends AbstractBlock implements AfterEntityEnterBlockListener {
+public class SpikesBlock extends AbstractBlock {
 
     private boolean detonated;
 
     protected SpikesBlock() {
         super(0, "spikes_before", "spikes_after");
         this.detonated = false;
+
+        EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
+            if (event.block() == this) {
+                this.afterPlayerStepOnBlock(event);
+            }
+        });
     }
 
     @Override
@@ -26,29 +31,18 @@ public class SpikesBlock extends AbstractBlock implements AfterEntityEnterBlockL
     }
 
     @Override
-    public Optional<BlockRegister> afterBlockExplosionEvent() {
-        this.detonated = true;
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean onEntityEnterBlock(EntityEnterBlockEvent e) {
+    public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
         return true;
     }
 
     @Override
-    public void afterEnemyEnterBlock(EntityEnterBlockEvent e) {
-    }
-
-    @Override
-    public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return true;
     }
 
-    @Override
-    public void afterPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    private void afterPlayerStepOnBlock(PlayerStepOnBlockEvent event) {
         if (!this.detonated) {
-            e.player().hurt(1);
+            event.player().hurt(1);
             this.setTexture(1);
             this.detonated = true;
         }

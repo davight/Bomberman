@@ -1,14 +1,14 @@
 package grid.blocks;
 
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
+import events.EnemyEnterTileEvent;
+import events.PlayerEnterTileEvent;
+import grid.map.Tile;
+import items.ItemRegister;
+import util.Util;
 
 import java.util.Optional;
-import java.util.Random;
 
-public class BarrelBlock extends AbstractBlock {
-
-    private static final Random RANDOM = new Random();
+public class BarrelBlock extends AbstractBlock implements Explodable {
 
     protected BarrelBlock() {
         super("barrel", "barrel2");
@@ -25,17 +25,22 @@ public class BarrelBlock extends AbstractBlock {
     }
 
     @Override
-    public Optional<BlockRegister> afterBlockExplosionEvent() {
-        return Optional.of(RANDOM.nextInt(100) > 80 ? BlockRegister.WATER : BlockRegister.GRASS);
-    }
-
-    @Override
-    public boolean onEntityEnterBlock(EntityEnterBlockEvent e) {
+    public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
         return false;
     }
 
     @Override
-    public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return false;
+    }
+
+    @Override
+    public Optional<BlockRegister> newBlock() {
+        return Optional.of(Util.randomBoolean(90) ? BlockRegister.GRASS : BlockRegister.COLOR);
+    }
+
+    @Override
+    public void onExplosion(Tile at) {
+        Util.randomBooleanThen(2, () -> at.spawnItem(ItemRegister.HEART.getNew()));
     }
 }

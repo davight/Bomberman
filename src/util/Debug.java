@@ -1,5 +1,7 @@
 package util;
 
+import java.util.Arrays;
+
 public class Debug {
 
     private static final String GREEN = "\u001B[32m";
@@ -17,6 +19,12 @@ public class Debug {
 
     public static void disable() {
         enabled = false;
+    }
+
+    public static void log(boolean condition, String... s) {
+        if (condition) {
+            log(s);
+        }
     }
 
     public static void log(String... s) {

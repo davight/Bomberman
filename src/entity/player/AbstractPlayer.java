@@ -3,28 +3,33 @@ package entity.player;
 import entity.movement.Direction;
 import entity.movement.Movable;
 import entity.movement.MovementManager;
+import events.EventManager;
+import events.PlayerDeathEvent;
+import events.PlayerEnterTileEvent;
 import fri.shapesge.Image;
 import fri.shapesge.ImageData;
 import game.Game;
+import grid.map.Map;
 import grid.map.Tile;
 import items.Bomb;
 import items.Usable;
-import resources.ImageManager;
-import util.Debug;
+import util.ImageManager;
+import util.Util;
+import util.Waiter;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Trieda player predstavuje hráča ovládaného používateľom pomocou klávesnice.
  */
 public abstract class AbstractPlayer implements Movable {
 
-    private static final ImageData HEALTH = ImageManager.getImage("misc/health");
-    private static final int INVENTORY_SIZE = 3;
+    protected static final ImageData EMPTY_SLOT = ImageManager.getImage("player/empty_inventory_slot");
+    protected static final int START_HEALTH = 3;
+    protected static final int INVENTORY_SIZE = 3;
     private static final int BOMB_COOLDOWN = 4000;
-    private static final int START_HEALTH = 3;
 
-    private final ArrayList<Image> healthPoints = new ArrayList<>(this.health);
     private final ArrayList<Usable> inventory = new ArrayList<>(3);
     private final MovementManager movement;
     private final Image image;
@@ -33,40 +38,43 @@ public abstract class AbstractPlayer implements Movable {
     private Tile tile;
     private long bombTime = 0;
     private int health = START_HEALTH;
+    private boolean isAlive = true;
 
     /**
      * Inicializuje nového hráča na danom mieste.
      * @param tile tile, na ktorom sa hráč zobrazí
      */
     public AbstractPlayer(Tile tile, boolean reversed) {
-        Direction startDirection = this.getValidDirections().keySet().iterator().next();
+        Direction startDirection = Util.randomElement(this.getValidDirections().keySet());
         this.image = new Image(this.getValidDirections().get(startDirection).staying());
 
         this.movement = new MovementManager(this);
         this.movement.teleport(startDirection, tile);
         this.image.makeVisible();
 
-        Game.getInstance().manageObject(this);
         this.tile = tile;
         this.bombTime = System.currentTimeMillis();
-
-        int start = reversed ? 800 : 0;
-        for (int i = 0; i < this.health; i++) {
-            Image tempImage = new Image(HEALTH);
-            tempImage.changePosition((i * 25) + 10 + start, 10);
-            tempImage.makeVisible();
-            this.healthPoints.add(tempImage);
-        }
+        Game.manageObject(this);
     }
 
     public void kill() {
-        this.hurt(this.health);
+        if (!this.isAlive) {
+            return;
+        }
+        this.health = 0;
+        this.die();
     }
 
-    public void die() {
+    private void die() {
+        this.updateHealthPoints(0);
+        this.isAlive = false;
+        if (this.movement.isActive()) {
+            this.movement.stopMoving();
+        }
         this.image.changeImage(ImageManager.getImage("player/death"));
-        Game.getInstance().stopManagingObject(this);
-        Game.getInstance().removePlayer(this);
+        new Waiter(4000, (w) -> this.image.makeInvisible()).waitAndRun();
+        Game.stopManagingObject(this);
+        EventManager.fireEvent(new PlayerDeathEvent(this));
     }
 
     public void teleport(Direction direction, Tile tile) {
@@ -85,19 +93,23 @@ public abstract class AbstractPlayer implements Movable {
      * @param amount počet životov, ktoré sa vezmú
      */
     public void hurt(int amount) {
+        if (!this.isAlive) {
+            return;
+        }
         this.health -= Math.min(amount, this.health);
-        Debug.log(Math.max(0, START_HEALTH - this.health));
-        for (int i = 0; i < START_HEALTH - this.health; i++) {
-            this.healthPoints.get(i).makeInvisible();
-            //this.healthPoints.removeLast();
+        if (this.health <= 0 ) {
+            this.die();
+        } else {
+            this.updateHealthPoints(this.health);
         }
     }
 
     public void heal(int amount) {
-        this.health += amount;
-        for (int i = 0; i < Math.min(amount, this.healthPoints.size()); i++) {
-            this.healthPoints.get(i).makeVisible();
+        if (!this.isAlive) {
+            return;
         }
+        this.health = Math.min(amount + this.health, START_HEALTH);
+        this.updateHealthPoints(this.health);
     }
 
     /**
@@ -107,12 +119,16 @@ public abstract class AbstractPlayer implements Movable {
         return this.health;
     }
 
+    public boolean isAlive() {
+        return this.isAlive;
+    }
+
     /**
      * ShapesGE listener pre kliknutie klávesy enter. Po kliknutí hráč položí na svoje miesto bombu.
      * Pred ďalším položením má určitý cooldown.
      */
     public void pressEnter() {
-        if (this.movement.isActive()) {
+        if (this.movement.isActive() || !this.isAlive) {
             return;
         }
         if (!this.inventory.isEmpty() && this.activeInventorySlot != -1) {
@@ -121,34 +137,29 @@ public abstract class AbstractPlayer implements Movable {
                 this.takeFromInventory(item);
             }
         } else if (this.bombTime + BOMB_COOLDOWN < System.currentTimeMillis()) {
-            new Bomb(this.tile);
+            new Bomb(this.tile, Game.getLevelId());
             this.bombTime = System.currentTimeMillis();
         }
     }
 
     public void move(Direction dir) {
-        if (this.movement.isActive() || this.health <= 0) {
+        if (this.movement.isActive() || !this.isAlive) {
             return;
         }
-        Tile newTile = Game.getInstance().getMap().getTileAtBoard(this.tile.getBoardX() + dir.getX(), this.tile.getBoardY() + dir.getY());
-        if (newTile != null && newTile.onPlayerEnterTile(this, this.tile)) {
+        Tile newTile = Map.getTileAtBoard(this.tile.getBoardX() + dir.getX(), this.tile.getBoardY() + dir.getY());
+        if (newTile != null && newTile.canEnemyEnterTile(this, this.tile)) {
             this.movement.startMoving(dir, this.tile, newTile);
         }
     }
 
-    /**
-     * ShapesGE listener ticku. Zabije hráča ak má menej ako 1 život a zároveň sa nepohybuje.
-     */
-    public void tick() {
-        if (!this.movement.isActive() && this.health <= 0) {
-            this.die();
-        }
-    }
-
     @Override
-    public void afterMovementEvent(Tile tile) {
-        tile.afterPlayerEnterTile(this, this.tile);
-        this.tile = tile;
+    public void afterSuccessfulMovement(Tile tile) {
+        if (this.isAlive) {
+            EventManager.fireEvent(new PlayerEnterTileEvent(this, tile, this.tile));
+            this.tile = tile;
+        } else {
+            this.image.changeImage(ImageManager.getImage("player/death"));
+        }
     }
 
     @Override
@@ -161,7 +172,15 @@ public abstract class AbstractPlayer implements Movable {
         return 70;
     }
 
-    public boolean addToInventory(Usable item) {
+    public abstract void updateHealthPoints(int currentHealth);
+
+    public abstract boolean addToInventory(Usable item);
+
+    public abstract boolean takeFromInventory(Usable item);
+
+    public abstract Optional<Usable> activeItem();
+
+    public boolean addToInventory2(Usable item) {
         if (this.inventory.size() < INVENTORY_SIZE) {
             this.inventory.add(item);
             this.activeInventorySlot = this.inventory.size() - 1;
@@ -170,11 +189,10 @@ public abstract class AbstractPlayer implements Movable {
         return false;
     }
 
-    public void takeFromInventory(Usable item) {
+    public void takeFromInventory2(Usable item) {
         if (this.inventory.contains(item)) {
             this.inventory.remove(item);
             this.activeInventorySlot = this.inventory.size() - 1;
         }
     }
-
 }

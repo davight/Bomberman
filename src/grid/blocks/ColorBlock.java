@@ -1,15 +1,26 @@
 package grid.blocks;
 
-import events.AfterEntityEnterBlockListener;
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
+import events.EnemyStepOnBlockEvent;
+import events.EnemyEnterTileEvent;
+import events.EventManager;
+import events.PlayerEnterTileEvent;
+import events.PlayerStepOnBlockEvent;
 
-import java.util.Optional;
-
-public class ColorBlock extends AbstractBlock implements AfterEntityEnterBlockListener {
+public class ColorBlock extends AbstractBlock {
 
     protected ColorBlock() {
         super("red_block", "green_block", "blue_block");
+
+        EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
+            if (event.block() == this) {
+                this.onBlockStep();
+            }
+        });
+        EventManager.registerHandler(EnemyStepOnBlockEvent.class, (event) -> {
+            if (event.block() == this) {
+                this.onBlockStep();
+            }
+        });
     }
 
     @Override
@@ -23,27 +34,16 @@ public class ColorBlock extends AbstractBlock implements AfterEntityEnterBlockLi
     }
 
     @Override
-    public Optional<BlockRegister> afterBlockExplosionEvent() {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean onEntityEnterBlock(EntityEnterBlockEvent e) {
+    public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
         return true;
     }
 
     @Override
-    public void afterEnemyEnterBlock(EntityEnterBlockEvent e) {
-        this.setRandomTexture();
-    }
-
-    @Override
-    public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return true;
     }
 
-    @Override
-    public void afterPlayerEnterBlock(PlayerEnterBlockEvent e) {
-        this.setRandomTexture();
+    private void onBlockStep() {
+        super.setRandomTexture();
     }
 }

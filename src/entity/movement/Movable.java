@@ -13,7 +13,6 @@ public interface Movable {
 
     Map<Direction, MovementManager.Pack> getValidDirections();
 
-    default void afterMovementEvent(Tile tile) {
-    }
+    void afterSuccessfulMovement(Tile tile);
 
 }

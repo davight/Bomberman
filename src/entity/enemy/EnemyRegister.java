@@ -12,24 +12,16 @@ public enum EnemyRegister {
     private static WeightedRandomness<EnemyRegister> randomEnemies = new WeightedRandomness<>();
     static {
         for (EnemyRegister e : values()) {
-            randomEnemies.add(e, e.getWeight());
+            randomEnemies.add(e, e.weight);
         }
     }
 
     private final Supplier<AbstractEnemy> supplier;
     private final int weight;
 
-    EnemyRegister(Supplier<AbstractEnemy> supplier) {
-        this(1, supplier);
-    }
-
     EnemyRegister(int weight, Supplier<AbstractEnemy> supplier) {
         this.supplier = supplier;
         this.weight = weight;
-    }
-
-    private int getWeight() {
-        return this.weight;
     }
 
     public AbstractEnemy getNew() {

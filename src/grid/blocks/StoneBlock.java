@@ -1,14 +1,12 @@
 package grid.blocks;
 
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
-
-import java.util.Optional;
+import events.EnemyEnterTileEvent;
+import events.PlayerEnterTileEvent;
 
 public class StoneBlock extends AbstractBlock {
 
     protected StoneBlock() {
-        super("rock4", "rock5", "rock6", "rock7", "rock8");
+        super("rock1", "rock2", "rock3", "rock4", "rock5", "rock6", "rock7");
     }
 
     @Override
@@ -22,17 +20,12 @@ public class StoneBlock extends AbstractBlock {
     }
 
     @Override
-    public Optional<BlockRegister> afterBlockExplosionEvent() {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean onEntityEnterBlock(EntityEnterBlockEvent e) {
+    public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
         return false;
     }
 
     @Override
-    public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return false;
     }
 }

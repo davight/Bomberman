@@ -4,7 +4,8 @@ import entity.enemy.AbstractEnemy;
 import entity.player.AbstractPlayer;
 import fri.shapesge.ImageData;
 import game.Game;
-import resources.ImageManager;
+import util.ImageManager;
+import util.Util;
 
 public class Orbit extends AbstractItem implements Usable {
 
@@ -14,14 +15,13 @@ public class Orbit extends AbstractItem implements Usable {
 
     @Override
     public boolean onUse(AbstractPlayer player) {
-        if (player.getHealth() <= 1) {
-            return false;
+        if (player.getHealth() > 1) {
+            player.hurt(1);
+            AbstractEnemy randomEnemy = Util.randomElement(Game.getEnemies());
+            randomEnemy.kill();
+            return true;
         }
-        player.hurt(1);
-        for (AbstractEnemy e : Game.getInstance().getEnemies()) {
-            e.hurt(1);
-        }
-        return true;
+        return false;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class Orbit extends AbstractItem implements Usable {
     }
 
     @Override
-    public boolean onPickup(AbstractPlayer player) {
+    public boolean canPickup(AbstractPlayer player) {
         if (player.addToInventory(this)) {
             return true;
         }

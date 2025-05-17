@@ -1,38 +1,49 @@
 package entity.enemy;
 
-import entity.Living;
 import entity.movement.Direction;
 import entity.movement.Movable;
 import entity.movement.MovementManager;
 import entity.player.AbstractPlayer;
+import events.EnemyDeathEvent;
+import events.EnemyEnterTileEvent;
+import events.EventManager;
 import fri.shapesge.Image;
 import game.Game;
+import grid.map.Map;
 import grid.map.Tile;
 import util.Util;
+import util.Waiter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public abstract class AbstractEnemy implements Movable, Living {
+public abstract class AbstractEnemy implements Movable {
 
-    // TODO FIX PROBLEM WHEN TILE THINKS ENEMY IS ON IT BUT ISNT ACTUALLY CAUSE ITS DEAD
     private final Image image;
     private final MovementManager movement;
 
+    private Waiter mover = null;
     private long lastMillis;
-    private int health;
     private Tile tile;
     private boolean isAlive;
 
     public AbstractEnemy() {
-        this.health = 4;
+        this.tile = null;
         this.lastMillis = System.currentTimeMillis();
         this.isAlive = true;
-        Direction random = Util.randomElement(this.getValidDirections().keySet().toArray(new Direction[0]));
+        Direction random = Util.randomElement(this.getValidDirections().keySet());
         this.image = new Image(this.getValidDirections().get(random).staying());
         this.image.makeVisible();
         this.movement = new MovementManager(this);
-        Game.getInstance().manageObject(this);
+
+        this.startMover();
+    }
+
+    public void despawn() {
+        this.movement.stopMoving();
+        this.tile.removeEnemy(this);
+        this.isAlive = false;
+        this.image.makeInvisible();
     }
 
     @Override
@@ -41,9 +52,12 @@ public abstract class AbstractEnemy implements Movable, Living {
     }
 
     @Override
-    public final void afterMovementEvent(Tile tile) {
-        tile.afterEntityEnterTile(this, this.tile);
-        this.tile = tile;
+    public final void afterSuccessfulMovement(Tile newTile) {
+        if (!this.isAlive) { // enemy can die while moving so lets not fire event in that case
+            return;
+        }
+        EventManager.fireEvent(new EnemyEnterTileEvent(this, newTile, this.tile));
+        this.tile = newTile;
     }
 
     public final void setTile(Tile tile, Direction direction) {
@@ -55,16 +69,9 @@ public abstract class AbstractEnemy implements Movable, Living {
         this.setTile(tile, Direction.UP);
     }
 
-    public final void tick() {
-        if (!this.isAlive) {
-            this.image.makeInvisible();
-            return;
-        }
-        if (this.lastMillis + this.getTimeBetweenSteps() * 10L > System.currentTimeMillis() || this.movement.isActive()) {
-            return;
-        }
+    private void movement(Waiter waiter) {
         Direction[] arr = null;
-        for (AbstractPlayer p : Game.getInstance().getPlayers()) {
+        for (AbstractPlayer p : Game.getPlayers()) {
             arr = this.checkForPlayer(p);
             if (arr != null) {
                 break;
@@ -76,7 +83,6 @@ public abstract class AbstractEnemy implements Movable, Living {
 
         for (Direction dir : arr) { // Actual movement
             if (this.tryMove(dir)) {
-                this.lastMillis = System.currentTimeMillis();
                 return;
             }
         }
@@ -89,7 +95,7 @@ public abstract class AbstractEnemy implements Movable, Living {
             int x = this.tile.getBoardX();
             boolean seePlayer = true;
             for (int y = Math.min(playerTile.getBoardY(), this.tile.getBoardY()); y <= Math.max(playerTile.getBoardY(), this.tile.getBoardY()); y++) {
-                Tile path = Game.getInstance().getMap().getTileAtBoard(x, y);
+                Tile path = Map.getTileAtBoard(x, y);
                 if (path == null || !path.getBlock().isSeeThrough()) {
                     seePlayer = false;
                     break;
@@ -104,7 +110,7 @@ public abstract class AbstractEnemy implements Movable, Living {
             int y = this.tile.getBoardY();
             boolean seePlayer = true;
             for (int x = Math.min(playerTile.getBoardX(), this.tile.getBoardX()); x <= Math.max(playerTile.getBoardX(), this.tile.getBoardX()); x++) {
-                Tile path = Game.getInstance().getMap().getTileAtBoard(x, y);
+                Tile path = Map.getTileAtBoard(x, y);
                 if (path == null || !path.getBlock().isSeeThrough()) {
                     seePlayer = false;
                     break;
@@ -117,54 +123,60 @@ public abstract class AbstractEnemy implements Movable, Living {
         return null;
     }
 
+    private void startMover() {
+        if (this.mover != null) {
+            this.mover.cancelWait();
+        }
+        this.mover = new Waiter(this.millisBetweenMovement(), this::movement);
+        this.mover.waitAndRepeat();
+    }
+
+    private void cancelMover() {
+        if (this.mover != null) {
+            this.mover.cancelWait();
+            this.mover = null;
+        }
+    }
+
     public final Tile getTile() {
         return this.tile;
     }
 
     private boolean tryMove(Direction dir) {
-        if (this.movement.isActive() || this.health <= 0) {
+        if (this.movement.isActive()) {
             return false;
         }
-        Tile newTile = Game.getInstance().getMap().getTileAtBoard(this.tile.getBoardX() + dir.getX(), this.tile.getBoardY() + dir.getY());
-        if (newTile != null && newTile.onEntityEnterTile(this, this.tile)) {
+        Tile newTile = Map.getTileAtBoard(this.tile.getBoardX() + dir.getX(), this.tile.getBoardY() + dir.getY());
+        if (newTile != null && newTile.canEnemyEnterTile(this, this.tile)) {
             this.movement.startMoving(dir, this.tile, newTile);
             return true;
         }
         return false;
     }
 
-    @Override
-    public void hurt(int amount) {
-        this.health -= amount;
-        if (this.health <= 0) {
-            this.die();
+    public final void kill() {
+        if (this.movement.isActive()) {
+            this.movement.stopMoving();
         }
-    }
-
-    @Override
-    public final void die() {
+        this.cancelMover();
         this.isAlive = false;
         this.image.makeInvisible();
-        Game.getInstance().stopManagingObject(this);
-        Game.getInstance().removeEnemy(this);
+        EventManager.fireEvent(new EnemyDeathEvent(this));
     }
 
     public void freeze(long ms) {
-        this.lastMillis += ms;
+        this.cancelMover();
+        Waiter freeze = new Waiter(ms, (w) -> {
+            if (this.isAlive) {
+                this.startMover();
+            }
+        });
+        freeze.waitAndRun();
     }
 
-    @Override
-    public int getHealth() {
-        return this.health;
-    }
-
-    public boolean isAlive() {
-        return this.isAlive;
-    }
+    public abstract int millisBetweenMovement();
 
     public abstract void attack(AbstractPlayer player);
-
-    public abstract void ultimate();
 
     private Direction[] shuffleExcept(Direction dir) {
         ArrayList<Direction> directions = new ArrayList<>(this.getValidDirections().keySet());

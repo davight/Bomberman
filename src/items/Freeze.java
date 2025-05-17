@@ -4,7 +4,7 @@ import entity.enemy.AbstractEnemy;
 import entity.player.AbstractPlayer;
 import fri.shapesge.ImageData;
 import game.Game;
-import resources.ImageManager;
+import util.ImageManager;
 import util.Util;
 
 public class Freeze extends AbstractItem implements Usable {
@@ -14,7 +14,7 @@ public class Freeze extends AbstractItem implements Usable {
     }
 
     @Override
-    public boolean onPickup(AbstractPlayer player) {
+    public boolean canPickup(AbstractPlayer player) {
         if (player.addToInventory(this)) {
             super.remove();
             return true;
@@ -25,7 +25,7 @@ public class Freeze extends AbstractItem implements Usable {
     @Override
     public boolean onUse(AbstractPlayer player) {
         int durationMs = Util.randomInt(2000, 4000); // 2 to 4 seconds
-        for (AbstractEnemy e : Game.getInstance().getEnemies()) {
+        for (AbstractEnemy e : Game.getEnemies()) {
             e.freeze(durationMs);
         }
         return true;

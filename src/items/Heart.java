@@ -9,8 +9,8 @@ public class Heart extends AbstractItem {
     }
 
     @Override
-    public boolean onPickup(AbstractPlayer player) {
-        player.hurt(-1);
+    public boolean canPickup(AbstractPlayer player) {
+        player.heal(1);
         return true;
     }
 }

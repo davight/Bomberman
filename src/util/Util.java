@@ -1,6 +1,10 @@
 package util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 public class Util {
 
@@ -10,18 +14,16 @@ public class Util {
         return RAND.nextInt(100) < chance;
     }
 
-    public static void randomBooleanThen(int chance, Runnable action) {
+    public static boolean randomBooleanThen(int chance, Runnable action) {
         if (randomBoolean(chance)) {
             action.run();
+            return true;
         }
+        return false;
     }
 
     public static int randomInt(int from, int to) {
         return RAND.nextInt(from, to + 1);
-    }
-
-    public static double randomDouble(double from, double to) {
-        return RAND.nextDouble() * (to - from) + from;
     }
 
     public static double randomDouble() {

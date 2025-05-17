@@ -1,14 +1,13 @@
 package grid.blocks;
 
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
+import events.EnemyEnterTileEvent;
+import events.PlayerEnterTileEvent;
 import fri.shapesge.ImageData;
-import resources.ImageManager;
+import util.ImageManager;
 import util.WeightedRandomness;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class AbstractBlock {
 
@@ -35,11 +34,7 @@ public abstract class AbstractBlock {
     }
 
     public AbstractBlock(int activeImage, String... textures) {
-        for (String s : textures) {
-            ImageData image = ImageManager.getImage("blocks/" + s);
-            this.randomAccessTextures.add(image);
-            this.linearTextures.add(image);
-        }
+        this(textures);
         this.setTexture(activeImage);
     }
 
@@ -59,19 +54,16 @@ public abstract class AbstractBlock {
 
     public abstract boolean isSeeThrough();
 
-    // TODO part of interface
-    public abstract Optional<BlockRegister> afterBlockExplosionEvent();
-
     /**
      * Happens before actually moving, therefore being able to cancel the movement.
      * @return whether the entity can move into this block
      */
-    public abstract boolean onEntityEnterBlock(EntityEnterBlockEvent e);
+    public abstract boolean canEnemyEnterBlock(EnemyEnterTileEvent e);
 
     /**
      * Happens before actually moving, therefore being able to cancel the movement.
      * @return whether the player can move into this block
      */
-    public abstract boolean onPlayerEnterBlock(PlayerEnterBlockEvent e);
+    public abstract boolean canPlayerEnterBlock(PlayerEnterTileEvent e);
 
 }

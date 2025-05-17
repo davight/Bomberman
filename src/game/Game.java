@@ -1,156 +1,95 @@
 package game;
 
 import entity.enemy.AbstractEnemy;
-import entity.enemy.EnemyRegister;
 import entity.player.AbstractPlayer;
 import entity.player.BluePlayer;
 import entity.player.RedPlayer;
 import fri.shapesge.Manager;
-import grid.map.Map;
-import grid.map.RandomMap;
+import game.gui.LoseLevelScreen;
+import game.gui.WinLevelScreen;
+import util.Waiter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Game {
 
+    private static ArrayList<Object> managedObjects = new ArrayList<>();
     private static final Manager MANAGER = new Manager();
-    private final ArrayList<Object> managedObjects = new ArrayList<>();
+    private static Level currentLevel = null;
 
-    private RedPlayer redPlayer = null;
-    private BluePlayer bluePlayer = null;
-    private Map map = null;
-    private ArrayList<AbstractEnemy> enemies = new ArrayList<>();
-    private ArrayList<AbstractPlayer> players = new ArrayList<>();
-    private boolean isSolo;
-    private long startMillis;
+    public static void startDuoGame() {
+        currentLevel = new Level(1);
+        currentLevel.addPlayer(new BluePlayer(currentLevel.getRandomSpawnable()));
+        currentLevel.addPlayer(new RedPlayer(currentLevel.getRandomSpawnable()));
+    }
 
-    private static Game instance;
+    public static void startSoloGame() {
+        currentLevel = new Level(1);
+        currentLevel.addPlayer(new BluePlayer(currentLevel.getRandomSpawnable()));
+    }
 
-    public static Game getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("Game has not been started yet");
+    protected static void endLevel(Level level) {
+        if (currentLevel != level) {
+            return;
         }
-        return instance;
+        new Waiter(2000, (w) -> {
+            switch (level.getState()) {
+                case WIN -> {
+                    WinLevelScreen screen = new WinLevelScreen(level);
+                    screen.showAll();
+                    new Waiter(5000, (w2) -> {
+                        screen.hideAll();
+                        nextLevel();
+                    }).waitAndRun();
+                }
+                case LOSE -> {
+                    LoseLevelScreen screen = new LoseLevelScreen(level);
+                    screen.showAll();
+                }
+            }
+        }).waitAndRun();
     }
 
-    public static Game startDuoGame() {
-        instance = new Game();
-        instance.isSolo = false;
-        instance.startMillis = System.currentTimeMillis();
-
-        RandomMap generatedMap = new RandomMap();
-        instance.map = new Map(generatedMap.getMapChunks());
-
-        instance.players.add(new BluePlayer(instance.map.getRandomSpawnable()));
-        instance.players.add(new RedPlayer(instance.map.getRandomSpawnable()));
-
-        for (int i = 0; i < generatedMap.getMapChunks().length; i++) {
-            AbstractEnemy random = EnemyRegister.getRandom().getNew();
-            random.setTile(instance.map.getRandomSpawnable());
-            instance.enemies.add(random);
+    private static void nextLevel() {
+        Level newLevel = new Level(currentLevel.getId() + 1);
+        for (AbstractPlayer player : currentLevel.getPlayers()) {
+            newLevel.addPlayer(player);
+            player.teleport(null, newLevel.getRandomSpawnable());
         }
-
-        return instance;
+        currentLevel = newLevel;
     }
 
-    public static Game startSoloGame() {
-        instance = new Game();
-        instance.isSolo = true;
-        instance.startMillis = System.currentTimeMillis();
+    public static AbstractPlayer[] getPlayers() {
+        return currentLevel.getPlayers();
+    }
 
-        RandomMap generatedMap = new RandomMap();
-        instance.map = new Map(generatedMap.getMapChunks());
+    public static AbstractEnemy[] getEnemies() {
+        return currentLevel.getEnemies();
+    }
 
-        instance.players.add(new BluePlayer(instance.map.getRandomSpawnable()));
+    public static int getLevelId() {
+        return currentLevel.getId();
+    }
 
-        for (int i = 0; i < generatedMap.getMapChunks().length; i++) {
-            AbstractEnemy random = EnemyRegister.getRandom().getNew();
-            random.setTile(instance.map.getRandomSpawnable());
-            instance.enemies.add(random);
+    public static boolean isPlayingLevel(int id) {
+        return currentLevel.getId() == id && currentLevel.getState() == Level.State.PLAYING;
+    }
+
+    public static void manageObject(Object object) {
+        managedObjects.add(object);
+        MANAGER.manageObject(object);
+    }
+
+    public static void stopManagingObject(Object object) {
+        managedObjects.remove(object);
+        MANAGER.stopManagingObject(object);
+    }
+
+    private static void clearManagedObjects() {
+        for (Object object : managedObjects) {
+            MANAGER.stopManagingObject(object);
         }
-
-        return instance;
-    }
-
-    public void nextLevel() {
-        RandomMap generatedMap = new RandomMap();
-        instance.map = new Map(generatedMap.getMapChunks());
-
-        for (AbstractPlayer player : instance.players) {
-            player.teleport(null, instance.map.getRandomSpawnable());
-        }
-
-        for (int i = 0; i < generatedMap.getMapChunks().length; i++) {
-            AbstractEnemy random = EnemyRegister.getRandom().getNew();
-            random.setTile(instance.map.getRandomSpawnable());
-            this.enemies.add(random);
-        }
-    }
-
-    public void removePlayer(AbstractPlayer player) {
-        this.players.remove(player);
-
-        if (this.players.isEmpty()) {
-            System.out.println("LOST");
-        }
-    }
-
-    public Map getMap() {
-        return this.map;
-    }
-
-    public void removeEnemy(AbstractEnemy enemy) {
-        this.enemies.remove(enemy);
-        if (this.enemies.isEmpty()) {
-            System.out.println("WIN");
-            this.nextLevel();
-        }
-    }
-
-    public AbstractPlayer getRedPlayer() {
-        return this.redPlayer;
-    }
-
-    public AbstractPlayer getBluePlayer() {
-        return this.bluePlayer;
-    }
-
-    public AbstractEnemy[] getEnemies() {
-        return this.enemies.toArray(new AbstractEnemy[0]);
-    }
-
-    public AbstractPlayer[] getPlayers() {
-        return this.players.toArray(new AbstractPlayer[0]);
-    }
-
-    public boolean isSoloGame() {
-        return this.isSolo;
-    }
-
-    public boolean isDuoGame() {
-        return !this.isSolo;
-    }
-
-    public void manageObject(Object... objects) {
-        this.managedObjects.addAll(Arrays.asList(objects));
-        for (Object o : objects) {
-            MANAGER.manageObject(o);
-        }
-    }
-
-    public void stopManagingObject(Object... objects) {
-        this.managedObjects.removeAll(Arrays.asList(objects));
-        for (Object o : objects) {
-            MANAGER.stopManagingObject(o);
-        }
-    }
-
-    private void clearManagedObjects() {
-        this.stopManagingObject(this.managedObjects);
-    }
-
-    private Game() {
+        managedObjects = new ArrayList<>();
     }
 
 }

@@ -1,29 +1,32 @@
 package grid.blocks;
 
-import events.AfterEntityEnterBlockListener;
-import events.EntityEnterBlockEvent;
-import events.PlayerEnterBlockEvent;
+import events.EnemyEnterTileEvent;
+import events.EventManager;
+import events.PlayerEnterTileEvent;
+import events.PlayerStepOnBlockEvent;
 
 import java.util.HashMap;
-import java.util.Optional;
 
-public class WaterBlock extends AbstractBlock implements AfterEntityEnterBlockListener {
+public class WaterBlock extends AbstractBlock {
 
     private static HashMap<String, Integer> textures = new HashMap<>();
 
     static {
-        //textures.put("water_empty1", 3);
-        //textures.put("water_empty2", 3);
-        textures.put("water_with_ducks", 1);
-        //textures.put("water_small1", 4);
-        //textures.put("water_small2", 4);
-        textures.put("water_small3", 4);
-        textures.put("water_small4", 4);
-        textures.put("water_big1", 2);
+        textures.put("water1", 1);
+        textures.put("water2", 4);
+        textures.put("water3", 4);
+        textures.put("water4", 3);
+        textures.put("water5", 5);
     }
 
     protected WaterBlock() {
         super(textures);
+
+        EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
+            if (event.block() == this) {
+                event.player().kill();
+            }
+        });
     }
 
     @Override
@@ -37,26 +40,12 @@ public class WaterBlock extends AbstractBlock implements AfterEntityEnterBlockLi
     }
 
     @Override
-    public Optional<BlockRegister> afterBlockExplosionEvent() {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean onEntityEnterBlock(EntityEnterBlockEvent e) {
+    public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
         return false;
     }
 
     @Override
-    public void afterEnemyEnterBlock(EntityEnterBlockEvent e) {
-    }
-
-    @Override
-    public boolean onPlayerEnterBlock(PlayerEnterBlockEvent e) {
+    public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return true;
-    }
-
-    @Override
-    public void afterPlayerEnterBlock(PlayerEnterBlockEvent e) {
-        e.player().kill();
     }
 }

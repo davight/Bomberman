@@ -2,9 +2,8 @@ package items;
 
 import entity.player.AbstractPlayer;
 import fri.shapesge.Image;
-import fri.shapesge.ImageData;
 import grid.map.Tile;
-import resources.ImageManager;
+import util.ImageManager;
 
 public abstract class AbstractItem {
 
@@ -23,6 +22,6 @@ public abstract class AbstractItem {
         this.tileImage.makeInvisible();
     }
 
-    public abstract boolean onPickup(AbstractPlayer player);
+    public abstract boolean canPickup(AbstractPlayer player);
 
 }

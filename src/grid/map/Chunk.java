@@ -39,10 +39,10 @@ public class Chunk {
                 BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
-        new Chunk(
+        new Chunk(1,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.FIRE, BlockRegister.STONE, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS, BlockRegister.GRASS,
+                BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.STATUE, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.FIRE, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
         new Chunk(1,

@@ -1,6 +1,6 @@
 package entity.movement;
 
-import java.util.Random;
+import util.Util;
 
 /**
  * Enum smerov s definovanými rozdielmi súradníc.
@@ -11,7 +11,6 @@ public enum Direction {
     LEFT(-1, 0),
     RIGHT(1, 0);
 
-    private static final Random RANDOM = new Random();
     private final int x;
     private final int y;
 
@@ -29,14 +28,7 @@ public enum Direction {
     }
 
     public static Direction[] toShuffledArray() {
-        Direction[] arr = Direction.values();
-        for (int i = 0; i < arr.length; i++) {
-            int randomIndex = RANDOM.nextInt(arr.length);
-            Direction temp = arr[i];
-            arr[i] = arr[randomIndex];
-            arr[randomIndex] = temp;
-        }
-        return arr;
+        return Util.shuffleArray(Direction.values());
     }
 
 }

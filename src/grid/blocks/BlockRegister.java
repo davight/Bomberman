@@ -11,12 +11,13 @@ public enum BlockRegister {
     SPIKES(SpikesBlock::new),
     GRASS(GrassBlock::new),
     WATER(WaterBlock::new),
+    STATUE(StatueBlock::new),
     STONE(StoneBlock::new);
 
     private final Supplier<AbstractBlock> runnable;
 
-    BlockRegister(Supplier<AbstractBlock> block) {
-        this.runnable = block;
+    BlockRegister(Supplier<AbstractBlock> runnable) {
+        this.runnable = runnable;
     }
 
     public AbstractBlock getNew() {
