@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 
+/**
+ * Trieda FireBlock, ktora predstavuje kocku Fire.
+ */
 public class FireBlock extends AbstractBlock implements Explodable {
 
     private static final int DELAY_BETWEEN_HITS = 2000; // in ms
@@ -25,7 +28,7 @@ public class FireBlock extends AbstractBlock implements Explodable {
                 return new Waiter(DELAY_BETWEEN_HITS, (_) -> p.hurt(1));
             });
             if (event.block() instanceof FireBlock fireBlock && fireBlock.isOnFire && event.player().isAlive()) {
-                event.player().hurt(1); // hurt once they enter open fire, and then every 2 seconds while they are in it
+                event.player().hurt(1);
                 if (!damager.isWaiting()) {
                     damager.waitAndRepeat();
                 }
@@ -33,6 +36,7 @@ public class FireBlock extends AbstractBlock implements Explodable {
                 damager.cancelWait();
             }
         });
+
         new Waiter(200, (w) -> {
             for (Tile t : new HashSet<>(burningTiles)) {
                 if (t.getBlock() instanceof FireBlock block && block.isOnFire) {
@@ -53,31 +57,50 @@ public class FireBlock extends AbstractBlock implements Explodable {
                 "fire_block_active1", "fire_block_active2", "fire_block_active3");
     }
 
+    /**
+     * @return Ci je mozne cez kocku vidiet dalej.
+     */
     @Override
     public boolean isSeeThrough() {
         return !this.isOnFire;
     }
 
+    /**
+     * @return Ci je kocka bezpecna pre spawn hracov a nepriatelov.
+     */
     @Override
     public boolean isSpawnable() {
         return false;
     }
 
+    /**
+     * @return Ci je mozne aby nepriatel vosiel na tuto kocku.
+     */
     @Override
     public boolean canEnemyEnterBlock(EnemyEnterTileEvent e) {
-        return true;
+        return !this.isOnFire;
     }
 
+    /**
+     * @return Ci je mozne aby hrac vosiel na tuto kocku.
+     */
     @Override
     public boolean canPlayerEnterBlock(PlayerEnterTileEvent e) {
         return true;
     }
 
+    /**
+     * @return Volitelnu kocku, ktora sa po vybuchu starej zobrazi na jej mieste.
+     */
     @Override
     public Optional<BlockRegister> newBlock() {
-        return Optional.empty(); // Dont change the block, only activate current
+        return Optional.empty();
     }
 
+    /**
+     * Spusti po vybuchnu na danom mieste.
+     * @param at miesto vybuchu
+     */
     @Override
     public void onExplosion(Tile at) {
         burningTiles.add(at);

@@ -4,6 +4,9 @@ import game.Game;
 
 import java.util.function.Consumer;
 
+/**
+ * Pomocka na spustanie nejakych akcii az o nejaku dobu.
+ */
 public class Waiter {
 
     private final Consumer<Waiter> runnable;
@@ -14,6 +17,11 @@ public class Waiter {
     private boolean repeat = false;
     private long startTime;
 
+    /**
+     * Inicializuje noveho cakaca.
+     * @param waitDuration cas v milisekundach, ktory cakac musi pockat pred vykonanim akcie
+     * @param runnable
+     */
     public Waiter(long waitDuration, Consumer<Waiter> runnable) {
         this.waitDuration = waitDuration;
         this.runnable = runnable;

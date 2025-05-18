@@ -14,17 +14,18 @@ import fri.shapesge.ImageData;
 import grid.blocks.AbstractBlock;
 import grid.blocks.BlockRegister;
 import items.AbstractItem;
+import items.ItemRegister;
 import util.ImageManager;
 
 import java.util.ArrayList;
 
 /**
- * Trieda tile, ktorá reprezentuje pomyselný priestor na hernom plátne. Na tomto priestore sa vykreslujú blocky.
+ * Trieda tile, ktora reprezentuje pomyselny priestor na hernom platne. Na tomto priestore sa vykresluju blocky.
  */
 public class Tile {
 
     /**
-     * Veľkosť tilu a teda zároveň aj odporúčaná veľkosť blocku, ktorý sa má na ňom vykresliť
+     * Velkost tilu a teda zaroven aj odporucana velkost kocky, ktora sa ma na nom vykreslit
      */
     public static final int TILE_SIZE = 50;
     private static final ImageData EMPTY_TILE = ImageManager.getImage("blocks/empty");
@@ -39,16 +40,18 @@ public class Tile {
     private AbstractBlock block;
 
     static {
-        // Pass directly to the corresponding tile
         EventManager.registerHandler(PlayerEnterTileEvent.class, (e) -> e.newTile().afterPlayerEnterTile(e));
         EventManager.registerHandler(EnemyEnterTileEvent.class, (e) -> e.newTile().afterEntityEnterTile(e));
-        // Handle static
-        // TODO popremyslat nad Living interfacom, ci je to vobec dobry napad, ci mu pridat getTile metodu a mozno aj zvysne ostatne
-        // TODO robit itemy, GUI, testovanie, mam na to cas do nedele
+
         EventManager.registerHandler(PlayerDeathEvent.class, (e) -> e.player().getTile().players.remove(e.player()));
         EventManager.registerHandler(EnemyDeathEvent.class, (e) -> e.enemy().getTile().enemies.remove(e.enemy()));
     }
 
+    /**
+     * Inicializuje novy tile na danej pozicii.
+     * @param boardX x-ova suradnica mapy
+     * @param boardY y-ova suradnica mapy
+     */
     public Tile(int boardX, int boardY) {
         this.boardX = boardX;
         this.boardY = boardY;
@@ -57,6 +60,12 @@ public class Tile {
         this.image.makeVisible();
     }
 
+    /**
+     * Preveri ci nepriatel moze vojst na tento tile.
+     * @param entity nepriatel, ktory chce vojst
+     * @param oldTile tile, na ktorom sa nachadza teraz
+     * @return Ci moze nepriatel vojst.
+     */
     public boolean canEnemyEnterTile(AbstractEnemy entity, Tile oldTile) {
         if (this.block == null) {
             return false;
@@ -67,6 +76,10 @@ public class Tile {
         return this.block.canEnemyEnterBlock(new EnemyEnterTileEvent(entity, this, oldTile));
     }
 
+    /**
+     * Event po vkroceni nepriatela na tile
+     * @param event dany event objekt
+     */
     public void afterEntityEnterTile(EnemyEnterTileEvent event) {
         if (event.oldTile() != null) {
             event.oldTile().enemies.remove(event.entity());
@@ -76,13 +89,23 @@ public class Tile {
         EventManager.fireEvent(new EnemyStepOnBlockEvent(this.block, event.entity()));
     }
 
-    public boolean canEnemyEnterTile(AbstractPlayer player, Tile oldTile) {
+    /**
+     * Preveri ci hrac moze vojst na tento tile.
+     * @param player hrac, ktory chce vojst
+     * @param oldTile tile, na ktorom sa nachadza teraz
+     * @return Ci moze hrac vojst.
+     */
+    public boolean canPlayerEnterTile(AbstractPlayer player, Tile oldTile) {
         if (this.block == null) {
             return false;
         }
         return this.block.canPlayerEnterBlock(new PlayerEnterTileEvent(player, this, oldTile));
     }
 
+    /**
+     * Event po vkroceni hraca na tile
+     * @param event dany event objekt
+     */
     public void afterPlayerEnterTile(PlayerEnterTileEvent event) {
         if (event.oldTile() != null) {
             event.oldTile().players.remove(event.player());
@@ -92,6 +115,7 @@ public class Tile {
         ArrayList<AbstractItem> toRemove = new ArrayList<>(); // aby som needitoval a zaroven neprechadzal cez list
         for (AbstractItem i : this.items) {
             if (i.canPickup(event.player())) {
+                i.remove();
                 toRemove.add(i);
             }
         }
@@ -99,56 +123,86 @@ public class Tile {
         EventManager.fireEvent(new PlayerStepOnBlockEvent(event.player(), this.block));
     }
 
-    public void spawnItem(AbstractItem item) {
-        this.items.add(item);
+    /**
+     * Spawne novy item na tomto tile
+     * @param item item na spawnutie
+     */
+    public void spawnItem(ItemRegister item) {
+        AbstractItem i = item.getNew();
+        i.setTile(this);
+        this.items.add(i);
     }
 
+    /**
+     * @return Realnu x-ovu poziciu laveho horneho rohu
+     */
     public int getX() {
         return this.boardX * TILE_SIZE;
     }
 
+    /**
+     * @return Realnu y-ovu poziciu laveho horneho rohu
+     */
     public int getY() {
         return this.boardY * TILE_SIZE;
     }
 
     /**
-     * Vráti x-ovú súradnicu z pola na hernom plátne, na ktorom sa tento tile nachádza
+     * @return Mapovu x-ovu suradnicu z na ktorej sa tile nachadza
      */
     public int getBoardX() {
         return this.boardX;
     }
 
     /**
-     * Vráti y-ovú súradnicu z pola na hernom plátne, na ktorom sa tento tile nachádza
+     * @return Mapovu y-ovu suradnicu z na ktorej sa tile nachadza
      */
     public int getBoardY() {
         return this.boardY;
     }
 
     /**
-     * Zabije entitu alebo hráča, ktorí sa nachádzajú na tomto tile.
+     * Zabije vsetkych hracov a nepriatelov, ktori sa na tomto tile nachadzaju.
      */
     public void killAll() {
         new ArrayList<>(this.players).forEach(AbstractPlayer::kill);
         new ArrayList<>(this.enemies).forEach(AbstractEnemy::kill);
     }
 
+    /**
+     * Odstrani nepriatela zo zoznamu nepriatelov, ktori sa nachadzaju na tomto tile.
+     * @param e nepriatel na odstranenie
+     */
     public void removeEnemy(AbstractEnemy e) {
         this.enemies.remove(e);
     }
 
+    /**
+     * @return Kocku, ktora sa aktualne vykresluje na tomto tile.
+     */
     public AbstractBlock getBlock() {
         return this.block;
     }
 
+    /**
+     * Aktualizuje texturu kocky, ktora sa aktualne vykresluje na tomto tile.
+     */
     public void update() {
         this.image.changeImage(this.block.getTexture());
     }
 
+    /**
+     * Nastavi novu kocku, ktora sa ma vykreslovat na tomto tile.
+     * @param block typ novej kocky
+     */
     public void setBlock(BlockRegister block) {
         this.setBlock(block.getNew());
     }
 
+    /**
+     * Nastavi novu kocku, ktora sa ma vykreslovat na tomto tile.
+     * @param block nova kocka
+     */
     public void setBlock(AbstractBlock block) {
         this.block = block;
         this.update();

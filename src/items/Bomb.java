@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
+/**
+ *
+ */
 public class Bomb { // This special items does not extend AbstractItem
 
     private static final int TIME_TO_EXPLODE = 3000;

@@ -16,29 +16,39 @@ import util.Waiter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 
+/**
+ * Abstraktna trieda ako template pre vytvaranie nepriatelov.
+ */
 public abstract class AbstractEnemy implements Movable {
 
     private final Image image;
     private final MovementManager movement;
+    private final EnumMap<Direction, MovementManager.Pack> directions;
 
     private Waiter mover = null;
-    private long lastMillis;
     private Tile tile;
     private boolean isAlive;
 
+    /**
+     * Vytvori novu instanciu nepriatela s prednastavenymi hodnotami.
+     */
     public AbstractEnemy() {
         this.tile = null;
-        this.lastMillis = System.currentTimeMillis();
         this.isAlive = true;
-        Direction random = Util.randomElement(this.getValidDirections().keySet());
-        this.image = new Image(this.getValidDirections().get(random).staying());
+        this.directions = this.getValidDirections();
+        Direction random = Util.randomElement(this.directions.keySet());
+        this.image = new Image(this.directions.get(random).staying());
         this.image.makeVisible();
         this.movement = new MovementManager(this);
 
         this.startMover();
     }
 
+    /**
+     * Zmaze nepriatela z mapy.
+     */
     public void despawn() {
         this.movement.stopMoving();
         this.tile.removeEnemy(this);
@@ -46,11 +56,18 @@ public abstract class AbstractEnemy implements Movable {
         this.image.makeInvisible();
     }
 
+    /**
+     * @return obrazok tohto nepriatela.
+     */
     @Override
     public final Image getImage() {
         return this.image;
     }
 
+    /**
+     * Vykona sa po uspesnom presunuti nepriatela na novy tile.
+     * @param newTile Tile, na ktory sa nepriatel posunul.
+     */
     @Override
     public final void afterSuccessfulMovement(Tile newTile) {
         if (!this.isAlive) { // enemy can die while moving so lets not fire event in that case
@@ -66,7 +83,7 @@ public abstract class AbstractEnemy implements Movable {
     }
 
     public final void setTile(Tile tile) {
-        this.setTile(tile, Direction.UP);
+        this.setTile(tile, Util.randomElement(this.directions.keySet()));
     }
 
     private void movement(Waiter waiter) {
@@ -91,7 +108,7 @@ public abstract class AbstractEnemy implements Movable {
     private Direction[] checkForPlayer(AbstractPlayer player) {
         Tile playerTile = player.getTile();
         Direction yDir = this.tile.getBoardY() > playerTile.getBoardY() ? Direction.UP : Direction.DOWN;
-        if (playerTile.getBoardX() == this.tile.getBoardX() && this.getValidDirections().containsKey(yDir)) { // They are on the same X coords, it is possible that enemy can see him
+        if (playerTile.getBoardX() == this.tile.getBoardX() && this.directions.containsKey(yDir)) { // They are on the same X coords, it is possible that enemy can see him
             int x = this.tile.getBoardX();
             boolean seePlayer = true;
             for (int y = Math.min(playerTile.getBoardY(), this.tile.getBoardY()); y <= Math.max(playerTile.getBoardY(), this.tile.getBoardY()); y++) {
@@ -106,7 +123,7 @@ public abstract class AbstractEnemy implements Movable {
             }
         }
         Direction xDir = this.tile.getBoardX() > playerTile.getBoardX() ? Direction.LEFT : Direction.RIGHT;
-        if (playerTile.getBoardY() == this.tile.getBoardY() && this.getValidDirections().containsKey(xDir)) { // They are on the same Y coords...
+        if (playerTile.getBoardY() == this.tile.getBoardY() && this.directions.containsKey(xDir)) { // They are on the same Y coords...
             int y = this.tile.getBoardY();
             boolean seePlayer = true;
             for (int x = Math.min(playerTile.getBoardX(), this.tile.getBoardX()); x <= Math.max(playerTile.getBoardX(), this.tile.getBoardX()); x++) {
@@ -138,6 +155,9 @@ public abstract class AbstractEnemy implements Movable {
         }
     }
 
+    /**
+     * @return tile, na ktorom sa nepriatel prave nachadza.
+     */
     public final Tile getTile() {
         return this.tile;
     }
@@ -154,7 +174,10 @@ public abstract class AbstractEnemy implements Movable {
         return false;
     }
 
-    public final void kill() {
+    /**
+     * Zabije nepriatela a zmaze ho z mapy.
+     */
+    public void kill() {
         if (this.movement.isActive()) {
             this.movement.stopMoving();
         }
@@ -164,6 +187,10 @@ public abstract class AbstractEnemy implements Movable {
         EventManager.fireEvent(new EnemyDeathEvent(this));
     }
 
+    /**
+     * Posunie cas, o ktory sa nepriatel ma pohybovat dalej.
+     * @param ms cas v milisekundach.
+     */
     public void freeze(long ms) {
         this.cancelMover();
         Waiter freeze = new Waiter(ms, (w) -> {
@@ -174,17 +201,23 @@ public abstract class AbstractEnemy implements Movable {
         freeze.waitAndRun();
     }
 
+    /**
+     * @return cas v milisekundach, ktory ma nepriatel cakat pred pokusom o dalsi pohyb.
+     */
     public abstract int millisBetweenMovement();
 
+    /**
+     * Vlastna implementacia zautocenia na hraca.
+     */
     public abstract void attack(AbstractPlayer player);
 
     private Direction[] shuffleExcept(Direction dir) {
-        ArrayList<Direction> directions = new ArrayList<>(this.getValidDirections().keySet());
-        boolean r = directions.remove(dir);
-        Collections.shuffle(directions);
+        ArrayList<Direction> list = new ArrayList<>(this.directions.keySet());
+        boolean r = list.remove(dir);
+        Collections.shuffle(list);
         if (r) {
-            directions.addFirst(dir);
+            list.addFirst(dir);
         }
-        return directions.toArray(new Direction[0]);
+        return list.toArray(new Direction[0]);
     }
 }

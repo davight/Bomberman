@@ -7,6 +7,9 @@ import game.Game;
 import util.ImageManager;
 import util.ShapesGeListener;
 
+/**
+ * Trieda na zobrazenie GUI, ktore je pociatocne pri zabutni hry.
+ */
 public class StartScreen {
 
     private static final ImageData SOLO_GAME = ImageManager.getImage("gui/solo_game");
@@ -20,6 +23,9 @@ public class StartScreen {
     private final int duoX;
     private final int duoY;
 
+    /**
+     * Inicializuje nove okno s pripravenymi obrazkami a tvarmi.
+     */
     public StartScreen() {
         this.background = new Rectangle(0, 0);
         this.background.changeSize(1000, 750);
@@ -36,6 +42,9 @@ public class StartScreen {
         this.startDuoGame.changePosition(this.duoX, this.duoY);
     }
 
+    /**
+     * Zobrazi vsetky prvky tohto GUI.
+     */
     public void showAll() {
         Game.manageObject(this);
         this.background.makeVisible();
@@ -43,6 +52,9 @@ public class StartScreen {
         this.startDuoGame.makeVisible();
     }
 
+    /**
+     * Schova vsetky prvky tohto GUI.
+     */
     public void hideAll() {
         Game.stopManagingObject(this);
         this.background.makeInvisible();
@@ -50,6 +62,11 @@ public class StartScreen {
         this.startDuoGame.makeInvisible();
     }
 
+    /**
+     * ShapesGE listener na detekovanie kliknutia mysky.
+     * @param x x-ova suradnica kliku
+     * @param y y-ova suradnica kliku
+     */
     @ShapesGeListener
     public void leftClick(int x, int y) {
         if (x >= this.soloX && x <= (this.soloX + SOLO_GAME.getWidth())

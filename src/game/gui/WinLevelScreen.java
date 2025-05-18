@@ -7,6 +7,9 @@ import fri.shapesge.TextBlock;
 import game.Level;
 import util.ImageManager;
 
+/**
+ * Trieda na zobrazenie GUI, ktore sa ukaze ked hrac alebo hraci vyhraju level.
+ */
 public class WinLevelScreen {
 
     private static final ImageData WIN = ImageManager.getImage("gui/you_won");
@@ -15,6 +18,10 @@ public class WinLevelScreen {
     private final Rectangle background;
     private final TextBlock time;
 
+    /**
+     * Inicializuje nove okno s pripravenymi obrazkami.
+     * @param level level, ktory hrac/i vyhral/i
+     */
     public WinLevelScreen(Level level) {
         this.background = new Rectangle(0, 0);
         this.background.changeColor("white");
@@ -27,18 +34,30 @@ public class WinLevelScreen {
         this.time.changePosition(300, 200 + WIN.getHeight() + 20);
     }
 
+    /**
+     * Zobrazi vsetky prvky tohto GUI.
+     */
     public void showAll() {
         this.background.makeVisible();
         this.time.makeVisible();
         this.image.makeVisible();
     }
 
+    /**
+     * Schova vsetky prvky tohto GUI.
+     */
     public void hideAll() {
         this.background.makeInvisible();
         this.time.makeInvisible();
         this.image.makeInvisible();
     }
 
+    /**
+     * S touto metodou som si pomohol zo StackOverFlowu. NEPISAL SOM JU JA.
+     * <a href="https://stackoverflow.com/questions/266825/how-to-format-a-duration-in-java-e-g-format-hmmss">odkaz na diskusiu</a>
+     * @param durMs dlzka na foramtovanie v milisekundach
+     * @return naformatovany text
+     */
     private static String formatDuration(long durMs) {
         StringBuilder f = new StringBuilder();
         int sec = (int)(durMs / 1000) % 60;

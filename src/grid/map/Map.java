@@ -6,6 +6,10 @@ import grid.blocks.BlockRegister;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Trieda Map reprezentuje hernu mapu kde sa hraju dane levely.
+ * Mapa obsahuje 3x4 chunkov.
+ */
 public class Map {
 
     public static final int HEIGHT_CHUNKS = 3;
@@ -23,6 +27,10 @@ public class Map {
 
     private final ArrayList<Tile> spawnableTiles = new ArrayList<>();
 
+    /**
+     * Inicializuje novu mapu s danymi chunkami.
+     * @param chunks 2D zoznam chunkov
+     */
     public Map(Chunk[][] chunks) {
         for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
             for (int chunkX = 0; chunkX < chunks[chunkY].length; chunkX++) {
@@ -43,6 +51,12 @@ public class Map {
         }
     }
 
+    /**
+     * Vyhlada tile na danych suradniciach mapy.
+     * @param x x-ova suradnica.
+     * @param y y-ova suradnica.
+     * @return Najdeny tile, alebo null ak je mimo mapu.
+     */
     public static Tile getTileAtBoard(int x, int y) {
         if (x >= 0 && x < tiles[0].length && y >= 0 && y < tiles.length) {
             return tiles[y][x];
@@ -51,16 +65,14 @@ public class Map {
     }
 
     /**
-     * Returns an array of all currently available spawnable tiles.
-     * @return an array
+     * @return Zoznam vsetkych spawnable tiles pre tuto mapu.
      */
     public Tile[] getSpawnableTiles() {
         return this.spawnableTiles.toArray(new Tile[0]);
     }
 
     /**
-     * Returns a randomly selected spawnable tile and removes it from list.
-     * @return chosen tile
+     * @return Nahodne vybrany spawnable tile pre tuto mapu.
      */
     public Tile getRandomSpawnable() {
         return this.spawnableTiles.remove(RAND.nextInt(this.spawnableTiles.size()));

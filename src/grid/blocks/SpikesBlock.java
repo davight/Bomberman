@@ -9,15 +9,17 @@ public class SpikesBlock extends AbstractBlock {
 
     private boolean detonated;
 
+    static {
+        EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
+            if (event.block() instanceof SpikesBlock block) {
+                block.afterPlayerStepOnBlock(event);
+            }
+        });
+    }
+
     protected SpikesBlock() {
         super(0, "spikes_before", "spikes_after");
         this.detonated = false;
-
-        EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
-            if (event.block() == this) {
-                this.afterPlayerStepOnBlock(event);
-            }
-        });
     }
 
     @Override
@@ -43,7 +45,8 @@ public class SpikesBlock extends AbstractBlock {
     private void afterPlayerStepOnBlock(PlayerStepOnBlockEvent event) {
         if (!this.detonated) {
             event.player().hurt(1);
-            this.setTexture(1);
+            super.setTexture(1);
+            event.player().getTile().update();
             this.detonated = true;
         }
     }

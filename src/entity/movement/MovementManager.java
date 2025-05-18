@@ -3,39 +3,43 @@ package entity.movement;
 import fri.shapesge.ImageData;
 import grid.map.Tile;
 import util.ImageManager;
-import util.Debug;
 import util.Waiter;
 
-import java.util.Map;
+import java.util.EnumMap;
 
 /**
- * Trieda entity.movement.Movement, ktorá sa stará o plynulý pohyb entít a hráča po plátne.
+ * Trieda MovementManager, ktora sa stara o plynuly pohyb entit a hraca po platne.
  */
 public class MovementManager {
 
     private static final int MINIMUM_STEPS = 3;
 
-    private final Map<Direction, Pack> registeredDirectionPacks;
+    private final EnumMap<Direction, Pack> registeredDirectionPacks;
     private final Movable movable;
 
     private Movement activeMovement = null;
 
+    /**
+     * Inicializuje novy manager pre dany Movable objekt.
+     * @param movable trieda implementujuca toto rozhranie
+     * @see Movable
+     */
     public MovementManager(Movable movable) {
         this.movable = movable;
         this.registeredDirectionPacks = movable.getValidDirections();
     }
 
     /**
-     * Vráti hodnotu, či je obrázok v tomto momente v nejakom pohybe.
+     * @return Vrati hodnotu, ci je obrazok v tomto momente v nejakom pohybe.
      */
     public boolean isActive() {
         return this.activeMovement != null;
     }
 
     /**
-     * Instantne teleportuje obrázok na daný tile s daným smerom.
-     * @param direction smer státia
-     * @param at konečný tile
+     * Instantne teleportuje obrazok na dany tile s danym smerom.
+     * @param direction smer statia, null ak ponechat aktualny
+     * @param at konecny tile
      */
     public void teleport(Direction direction, Tile at) {
         this.movable.getImage().changePosition(at.getBoardX() * Tile.TILE_SIZE, at.getBoardY() * Tile.TILE_SIZE);
@@ -46,7 +50,7 @@ public class MovementManager {
     }
 
     /**
-     * Spustí pohyb obrázku od štartovacieho tilu daným smerom s daným minimálnym rozosputom medzi krokmi.
+     * Spusti pohyb obrazku od startovacieho tilu danym smerom.
      *
      * @param direction sme pohybu
      * @param startTile zaciatocny tile
@@ -61,6 +65,9 @@ public class MovementManager {
         }
     }
 
+    /**
+     * Zastavi aktualny pohyb.
+     */
     public void stopMoving() {
         if (this.activeMovement != null) {
             this.activeMovement = null;
@@ -122,6 +129,11 @@ public class MovementManager {
         }
     }
 
+    /**
+     * Trieda na zhrnutie textur pre pohyb.
+     * @param staying pohybujuca textura
+     * @param moving stojaca textura
+     */
     public record Pack(ImageData staying, ImageData... moving) {
 
         public Pack(String staying, String... moving) {
