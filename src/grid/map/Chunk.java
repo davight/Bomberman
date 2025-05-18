@@ -34,7 +34,7 @@ public class Chunk {
         new Chunk(2,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.WATER, BlockRegister.GRASS,
-                BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.STONE, BlockRegister.GRASS,
+                BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS,
                 BlockRegister.WATER, BlockRegister.GRASS, BlockRegister.WATER, BlockRegister.STONE, BlockRegister.GRASS,
                 BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS, BlockRegister.GRASS);
         new Chunk(1,

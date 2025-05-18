@@ -1,5 +1,6 @@
 package game.gui;
 
+import fri.shapesge.FontStyle;
 import fri.shapesge.Image;
 import fri.shapesge.ImageData;
 import fri.shapesge.Rectangle;
@@ -30,7 +31,8 @@ public class WinLevelScreen {
         this.image = new Image(WIN);
         this.image.changePosition(300, 200);
 
-        this.time = new TextBlock("Completion time: " + formatDuration(level.getLevelTime()));
+        this.time = new TextBlock("Level " + level.getId() + "    Completion time: " + formatDuration(level.getLevelTime()));
+        this.time.changeFont(null, FontStyle.BOLD, 20);
         this.time.changePosition(300, 200 + WIN.getHeight() + 20);
     }
 

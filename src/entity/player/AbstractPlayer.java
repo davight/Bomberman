@@ -74,7 +74,7 @@ public abstract class AbstractPlayer implements Movable {
             this.movement.stopMoving();
         }
         this.image.changeImage(ImageManager.getImage("player/death"));
-        new Waiter(4000, (w) -> this.image.makeInvisible()).waitAndRun();
+        new Waiter(2500, (w) -> this.image.makeInvisible()).waitAndRun();
         Game.stopManagingObject(this);
         EventManager.fireEvent(new PlayerDeathEvent(this));
     }
