@@ -4,6 +4,7 @@
     <root id="archive" name="Bomberman.jar">
       <element id="module-output" name="Bomberman" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/shapesGE-2.0.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jetbrains/annotations/24.0.0/annotations-24.0.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

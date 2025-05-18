@@ -25,7 +25,7 @@ public class FireBlock extends AbstractBlock implements Explodable {
     static {
         EventManager.registerHandler(PlayerStepOnBlockEvent.class, (event) -> {
             Waiter damager = fireDamagers.computeIfAbsent(event.player(), (p) -> {
-                return new Waiter(DELAY_BETWEEN_HITS, (_) -> p.hurt(1));
+                return new Waiter(DELAY_BETWEEN_HITS, (w) -> p.hurt(1));
             });
             if (event.block() instanceof FireBlock fireBlock && fireBlock.isOnFire && event.player().isAlive()) {
                 event.player().hurt(1);
